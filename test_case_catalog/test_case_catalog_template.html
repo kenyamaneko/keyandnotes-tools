@@ -26,7 +26,7 @@
     </aside>
 
     <main class="min-w-0">
-      <section aria-label="絞り込み" class="sticky z-20 -mx-1 mb-4 border border-line bg-surface px-3 py-3 shadow-sm" style="top: env(safe-area-inset-top, 0px)">
+      <section id="catalog-header" aria-label="フィルター" class="sticky z-20 -mx-1 mb-4 border border-line bg-surface px-3 py-3 shadow-sm" style="top: env(safe-area-inset-top, 0px)">
         <div class="flex flex-col gap-3">
           <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span class="w-[4.5rem] text-xs font-medium text-muted">正常異常</span>
@@ -56,6 +56,8 @@
 (function () {
   var DATA = JSON.parse(document.getElementById('data').textContent);
   var CASES = DATA.cases;
+  // スクロールの端数で、目次のリンクを押した大機能の上端が余白の位置より小数ぶん下になるため、1 px 許容する
+  var ROUNDING_TOLERANCE_PX = 1;
   var KINDS = ['単体テスト', '部品間結合テスト', 'インフラ結合テスト', 'サービス間結合テスト', 'E2Eテスト', 'シナリオテスト'];
   var REGIONS = DATA.regions;
   var PERSPECTIVES = DATA.perspectives;
@@ -228,7 +230,7 @@
       toc += '<div><p class="mb-1 px-2 text-[0.6875rem] font-bold tracking-widest text-faint">' + esc(region) + '</p><ul class="flex flex-col">';
       majors.forEach(function (mcases, major) {
         var id = slug(region + major);
-        toc += '<li><a href="#' + id + '" class="flex items-center justify-between gap-2 px-2 py-1 text-muted hover:bg-sunken hover:text-fg"><span class="min-w-0">' + esc(major) + '</span><span class="tabular text-xs text-faint">' + mcases.length + '</span></a></li>';
+        toc += '<li><a href="#' + id + '" data-section-id="' + id + '" class="toc-link flex items-center justify-between gap-2 border-l-[3px] border-transparent px-2 py-1 text-muted hover:bg-sunken hover:text-fg aria-[current=location]:border-accent aria-[current=location]:bg-accent-soft aria-[current=location]:font-bold aria-[current=location]:text-fg"><span class="min-w-0">' + esc(major) + '</span><span class="tabular text-xs text-faint">' + mcases.length + '</span></a></li>';
         var minors = Array.from(groupBy(mcases, function (c) { return c.m || ''; }).entries());
         var sec = '<section id="' + id + '" class="scroll-mt-40"><div class="mb-3 flex items-baseline gap-3 border-b border-line pb-2">' +
           '<span class="text-xs font-medium text-faint">' + esc(region) + '</span><h2 class="text-xl font-bold">' + esc(major) + '</h2>' +
@@ -252,10 +254,52 @@
       });
       toc += '</ul></div>';
     });
-    if (!list.length) content = '<p class="border border-dashed border-line p-8 text-center text-muted">条件に合うケースがありません。絞り込みを外してください。</p>';
+    if (!list.length) content = '<p class="border border-dashed border-line p-8 text-center text-muted">条件に合うケースがありません。フィルターを外してください。</p>';
     document.getElementById('toc').innerHTML = toc;
     document.getElementById('content').innerHTML = content;
     state.openAll = null;
+    updateTocCurrentLocation();
+  }
+
+  function findCurrentSection() {
+    var sections = document.querySelectorAll('#content > section');
+    if (!sections.length) return null;
+    var catalogHeaderBottom = document.getElementById('catalog-header').getBoundingClientRect().bottom;
+    var current = sections[0];
+    sections.forEach(function (s) {
+      // 目次のリンクを押した大機能は固定の余白の位置で止まるため、その位置にある大機能も現在位置と判定する
+      var landingTop = parseFloat(getComputedStyle(s).scrollMarginTop);
+      if (s.getBoundingClientRect().top <= Math.max(catalogHeaderBottom, landingTop) + ROUNDING_TOLERANCE_PX) current = s;
+    });
+    return current;
+  }
+
+  function scrollTocLinkIntoView(link) {
+    var aside = document.querySelector('aside');
+    var linkRect = link.getBoundingClientRect(), asideRect = aside.getBoundingClientRect();
+    if (linkRect.top < asideRect.top) aside.scrollTop -= asideRect.top - linkRect.top;
+    else if (linkRect.bottom > asideRect.bottom) aside.scrollTop += linkRect.bottom - asideRect.bottom;
+  }
+
+  function highlightCurrentTocLink() {
+    document.querySelectorAll('.toc-link').forEach(function (a) { a.removeAttribute('aria-current'); });
+    var section = findCurrentSection();
+    if (!section) return null;
+    var link = document.querySelector('.toc-link[data-section-id="' + section.id + '"]');
+    link.setAttribute('aria-current', 'location');
+    return link;
+  }
+
+  function updateTocCurrentLocation() {
+    var link = highlightCurrentTocLink();
+    if (link) scrollTocLinkIntoView(link);
+  }
+
+  var isTocCurrentLocationUpdateQueued = false;
+  function queueTocCurrentLocationUpdate() {
+    if (isTocCurrentLocationUpdateQueued) return;
+    isTocCurrentLocationUpdateQueued = true;
+    requestAnimationFrame(function () { isTocCurrentLocationUpdateQueued = false; updateTocCurrentLocation(); });
   }
 
   function countPerspectives() {
@@ -318,6 +362,7 @@
 
   buildFilters();
   render();
+  window.addEventListener('scroll', queueTocCurrentLocationUpdate, { passive: true });
 })();
 </script>
 </body>
