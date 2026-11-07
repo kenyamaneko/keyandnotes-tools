@@ -3,11 +3,13 @@
 ## 前提条件
 
 - Python 3.14
-- Node.js (Tailwind で CSS を生成するときだけ必要)
+- Node.js (Tailwind で CSS を生成するときと、ブラウザで画面を確かめるテストを実行するときに必要)
 
 ## 開発環境
 
 1. `pip install -r requirements-dev.txt`
+2. 「テストケースカタログの CSS」の手順を実行する
+3. `python -m playwright install --with-deps chromium`
 
 ## テストケースカタログの CSS
 
