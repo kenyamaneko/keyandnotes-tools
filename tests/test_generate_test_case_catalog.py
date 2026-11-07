@@ -9,6 +9,13 @@ from catalog_support import (
     build_result_entry,
     generate_catalog_page,
     run_catalog_generation,
+    spec_prints,
+    write_csharp_result,
+    write_dart_result,
+    write_go_interleaved_result,
+    write_go_result,
+    write_kotlin_result,
+    write_python_result,
     write_result_file,
     write_typescript_result,
 )
@@ -2019,3 +2026,1518 @@ class Test本体__テストケースカタログ__入力__Python_のクラス名
         assert_message_contains(error.value, "Test で始まっていない")
 
 
+class Test本体__テストケースカタログ__入力__言語ごとの機能名の取り出し:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_orders.Test本体__注文__送料計算」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_python_result(
+                    directory,
+                    [
+                        (
+                            "tests.test_orders.Test本体__注文__送料計算",
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_ordersTest本体__注文__送料計算で_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの機能名は本体注文送料計算になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[本体:注文]送料計算」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_csharp_result(
+                    directory,
+                    [
+                        (
+                            SHIPPING_FEE_CASE_NAME,
+                            (CSHARP_ORDER_FEATURE_NAME, *SHIPPING_FEE_PROPERTIES),
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能が本体注文送料計算で_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの機能名は本体注文送料計算になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「[本体:注文]送料計算」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_kotlin_result(
+                    directory,
+                    [
+                        (
+                            "[本体:注文]送料計算",
+                            SHIPPING_FEE_CASE_NAME,
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名が本体注文送料計算で_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの機能名は本体注文送料計算になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_go_result(
+                    directory,
+                    [
+                        (
+                            f"TestShippingFee/[本体:注文]送料計算/{SHIPPING_FEE_CASE_NAME}",
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になるで_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの機能名は本体注文送料計算になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:注文]送料計算」のテスト「注文金額3000円で送料を計算すると、送料は無料になる」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_dart_result(
+                    directory,
+                    [(SHIPPING_FEE_CASE_NAME, spec_prints(SHIPPING_FEE_PROPERTIES))],
+                    group_names=["[本体:注文]送料計算"],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Dartのテスト結果に_グループ本体注文送料計算のテスト注文金額3000円で送料を計算すると_送料は無料になるで_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの機能名は本体注文送料計算になる",
+            ),
+        ],
+    )
+    def test_extracts_feature_name_per_language(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの機能名は「[本体:注文]送料計算」になる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert [
+            (case["k"], case["d"], case["m"], case["s"])
+            for case in page.catalog["cases"]
+        ] == [("本体", "注文", "", "送料計算")]
+
+    def test_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能を持たず_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_Trait区分大機能中機能小機能がないことを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」を持たず、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "Trait「区分・大機能・中機能・小機能」がないことを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_csharp_result(
+            tmp_path, [(SHIPPING_FEE_CASE_NAME, SHIPPING_FEE_PROPERTIES)]
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result, "Trait「区分・大機能・中機能・小機能」がない"
+        )
+
+    def test_設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名が送料計算で_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_テストクラスの表示名送料計算が_区分大機能中機能小機能_の形ではないことを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「送料計算」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "テストクラスの表示名「送料計算」が `[区分:大機能(:中機能)]小機能` の形ではないことを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_kotlin_result(
+            tmp_path, [("送料計算", SHIPPING_FEE_CASE_NAME, SHIPPING_FEE_PROPERTIES)]
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result,
+            "テストクラスの表示名「送料計算」",
+            "[区分:大機能(:中機能)]小機能",
+            "形ではない",
+        )
+
+    def test_設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算で_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_テストTestShippingFee本体注文送料計算がテスト関数機能名ケースの_3_階層ではないことを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            perspectives=["境界値"],
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "テスト「TestShippingFee/[本体:注文]送料計算」がテスト関数・機能名・ケースの 3 階層ではないことを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_go_result(
+            tmp_path, [("TestShippingFee/[本体:注文]送料計算", SHIPPING_FEE_PROPERTIES)]
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result,
+            "テスト「TestShippingFee/[本体:注文]送料計算」",
+            "テスト関数・機能名・ケースの 3 階層ではない",
+        )
+
+    def test_設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になる金額3000円で_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になる金額3000円がテスト関数機能名ケースの_3_階層ではないことを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            perspectives=["境界値"],
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる/金額3000円」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる/金額3000円」がテスト関数・機能名・ケースの 3 階層ではないことを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_go_result(
+            tmp_path,
+            [
+                (
+                    f"TestShippingFee/[本体:注文]送料計算/{SHIPPING_FEE_CASE_NAME}/金額3000円",
+                    SHIPPING_FEE_PROPERTIES,
+                )
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result,
+            "テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる/金額3000円」",
+            "テスト関数・機能名・ケースの 3 階層ではない",
+        )
+
+    def test_設定ファイルの言語Dartのテスト結果に_グループに入っていないテスト注文金額3000円で送料を計算すると_送料は無料になるで_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_テスト注文金額3000円で送料を計算すると_送料は無料になるが機能名のグループに入っていないことを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Dart」のテスト結果に、グループに入っていないテスト「注文金額3000円で送料を計算すると、送料は無料になる」で、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "テスト「注文金額3000円で送料を計算すると、送料は無料になる」が機能名のグループに入っていないことを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_dart_result(
+            tmp_path,
+            [(SHIPPING_FEE_CASE_NAME, spec_prints(SHIPPING_FEE_PROPERTIES))],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result,
+            "テスト「注文金額3000円で送料を計算すると、送料は無料になる」",
+            "機能名のグループに入っていない",
+        )
+
+
+class Test本体__テストケースカタログ__入力__言語ごとの項目の取り出し:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_hint.Test本体__出題__ヒントの表示」で、種別「単体テスト」、正常異常「正常系」、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」と「出題画面で「ヒント」を押す」、Then「出題の英文が表示される」を持つケースがあるとき",
+                lambda directory: write_python_result(
+                    directory,
+                    [("tests.test_hint.Test本体__出題__ヒントの表示", HINT_PROPERTIES)],
+                ),
+                id="機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_hintTest本体__出題__ヒントの表示で_種別単体テスト_正常異常正常系_Givenログインしているとき_Whenホーム画面で探しに行くを押すと出題画面でヒントを押す_Then出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップは_Givenログインしているとき_Whenホーム画面で探しに行くを押す出題画面でヒントを押す_Then出題の英文が表示されるの_1_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「[本体:出題]ヒントの表示」で、種別「単体テスト」、正常異常「正常系」、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」と「出題画面で「ヒント」を押す」、Then「出題の英文が表示される」を持つケースがあるとき",
+                lambda directory: write_kotlin_result(
+                    directory,
+                    [("[本体:出題]ヒントの表示", HINT_CASE_NAME, HINT_PROPERTIES)],
+                ),
+                id="機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名が本体出題ヒントの表示で_種別単体テスト_正常異常正常系_Givenログインしているとき_Whenホーム画面で探しに行くを押すと出題画面でヒントを押す_Then出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップは_Givenログインしているとき_Whenホーム画面で探しに行くを押す出題画面でヒントを押す_Then出題の英文が表示されるの_1_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestHint/[本体:出題]ヒントの表示/ログインしているとき、ホーム画面で「探しに行く」を押し、出題画面で「ヒント」を押すと、出題の英文が表示される」で、種別「単体テスト」、正常異常「正常系」、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」と「出題画面で「ヒント」を押す」、Then「出題の英文が表示される」を持つケースがあるとき",
+                lambda directory: write_go_result(
+                    directory,
+                    [
+                        (
+                            f"TestHint/[本体:出題]ヒントの表示/{HINT_CASE_NAME}",
+                            HINT_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Goのテスト結果に_テストTestHint本体出題ヒントの表示ログインしているとき_ホーム画面で探しに行くを押し_出題画面でヒントを押すと_出題の英文が表示されるで_種別単体テスト_正常異常正常系_Givenログインしているとき_Whenホーム画面で探しに行くを押すと出題画面でヒントを押す_Then出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップは_Givenログインしているとき_Whenホーム画面で探しに行くを押す出題画面でヒントを押す_Then出題の英文が表示されるの_1_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:出題]ヒントの表示」のテスト「ログインしているとき、ホーム画面で「探しに行く」を押し、出題画面で「ヒント」を押すと、出題の英文が表示される」で、種別「単体テスト」、正常異常「正常系」、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」と「出題画面で「ヒント」を押す」、Then「出題の英文が表示される」を持つケースがあるとき",
+                lambda directory: write_dart_result(
+                    directory,
+                    [(HINT_CASE_NAME, spec_prints(HINT_PROPERTIES))],
+                    group_names=["[本体:出題]ヒントの表示"],
+                ),
+                id="機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Dartのテスト結果に_グループ本体出題ヒントの表示のテストログインしているとき_ホーム画面で探しに行くを押し_出題画面でヒントを押すと_出題の英文が表示されるで_種別単体テスト_正常異常正常系_Givenログインしているとき_Whenホーム画面で探しに行くを押すと出題画面でヒントを押す_Then出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップは_Givenログインしているとき_Whenホーム画面で探しに行くを押す出題画面でヒントを押す_Then出題の英文が表示されるの_1_つになる",
+            ),
+        ],
+    )
+    def test_extracts_steps_per_language(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースのステップは、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」「出題画面で「ヒント」を押す」、Then「出題の英文が表示される」の 1 つになる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_HINT)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"] == HINT_STEPS
+
+    def test_機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になるが種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを_テストTestShippingFee本体注文送料計算注文金額2999円で送料を計算すると_送料は500円になるが種別単体テスト_正常異常正常系_When注文金額2999円で送料を計算する_Then送料は500円になるを持ち_2_つのテストの項目が_種別_正常異常_When_Then_の順に_3000円のテスト_2999円のテストの順で_1_項目ずつ交互に出ているとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載る注文金額2999円のケースのステップは_When注文金額2999円で送料を計算する_Then送料は500円になるの_1_つになる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる」が種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を、テスト「TestShippingFee/[本体:注文]送料計算/注文金額2999円で送料を計算すると、送料は500円になる」が種別「単体テスト」、正常異常「正常系」、When「注文金額2999円で送料を計算する」、Then「送料は500円になる」を持ち、2 つのテストの項目が、種別、正常異常、When、Then の順に、3000円のテスト、2999円のテストの順で 1 項目ずつ交互に出ているとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載る注文金額2999円のケースのステップは、When「注文金額2999円で送料を計算する」、Then「送料は500円になる」の 1 つになる",
+                ),
+            ],
+        )
+        entry = write_go_interleaved_result(
+            tmp_path,
+            [
+                (
+                    "TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる",
+                    SHIPPING_FEE_PROPERTIES,
+                ),
+                (
+                    "TestShippingFee/[本体:注文]送料計算/注文金額2999円で送料を計算すると、送料は500円になる",
+                    (
+                        ("種別", "単体テスト"),
+                        ("正常異常", "正常系"),
+                        ("When", "注文金額2999円で送料を計算する"),
+                        ("Then", "送料は500円になる"),
+                    ),
+                ),
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        cases_by_then = {case["steps"][0]["T"]: case for case in page.catalog["cases"]}
+        assert cases_by_then["送料は500円になる"]["steps"] == [
+            {"G": "", "W": ["注文金額2999円で送料を計算する"], "T": "送料は500円になる"}
+        ]
+
+    def test_機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Dartのテスト結果に_グループ本体注文送料計算のテスト注文金額3000円で送料を計算すると_送料は無料になるが_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つほかに_spec_で始まらない出力デバッグ用を出すとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップは_Given_なし_When注文金額3000円で送料を計算する_Then送料は無料になるの_1_つになる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:注文]送料計算」のテスト「注文金額3000円で送料を計算すると、送料は無料になる」が、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つほかに、`@spec` で始まらない出力「デバッグ用」を出すとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースのステップは、Given なし、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」の 1 つになる",
+                ),
+            ],
+        )
+        entry = write_dart_result(
+            tmp_path,
+            [
+                (
+                    SHIPPING_FEE_CASE_NAME,
+                    [*spec_prints(SHIPPING_FEE_PROPERTIES), "デバッグ用"],
+                )
+            ],
+            group_names=["[本体:注文]送料計算"],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"] == [
+            {"G": "", "W": ["注文金額3000円で送料を計算する"], "T": "送料は無料になる"}
+        ]
+
+    def test_機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Dartのテスト結果に_グループ本体注文送料計算のテスト注文金額3000円で送料を計算すると_送料は無料になるが_種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持つほかに_spec_で始まり__を含まない出力spec_種別を出すとき_設定ファイルを渡して生成コマンドを実行すると_出力spec_種別が_spec_キー値_の形ではないことを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:注文]送料計算」のテスト「注文金額3000円で送料を計算すると、送料は無料になる」が、種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つほかに、`@spec` で始まり `=` を含まない出力「@spec 種別」を出すとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "出力「@spec 種別」が `@spec キー=値` の形ではないことを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_dart_result(
+            tmp_path,
+            [
+                (
+                    SHIPPING_FEE_CASE_NAME,
+                    [*spec_prints(SHIPPING_FEE_PROPERTIES), "@spec 種別"],
+                )
+            ],
+            group_names=["[本体:注文]送料計算"],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result, "出力「@spec 種別」", "@spec キー=値", "形ではない"
+        )
+
+    def test_機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能が本体出題ヒントの表示で_種別単体テスト_正常異常正常系_Given1ログインしているとき_When1ホーム画面で探しに行くを押す_Then1出題の英文が表示される_When2結果画面でもう一度を押す_Then2新しい出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップは_1_つ目が_Givenログインしているとき_Whenホーム画面で探しに行くを押す_Then出題の英文が表示される_2_つ目が_Given_なし_When結果画面でもう一度を押す_Then新しい出題の英文が表示されるの_2_つになる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[本体:出題]ヒントの表示」で、種別「単体テスト」、正常異常「正常系」、Given1「ログインしているとき」、When1「ホーム画面で「探しに行く」を押す」、Then1「出題の英文が表示される」、When2「結果画面で「もう一度」を押す」、Then2「新しい出題の英文が表示される」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースのステップは、1 つ目が Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」、2 つ目が Given なし、When「結果画面で「もう一度」を押す」、Then「新しい出題の英文が表示される」の 2 つになる",
+                ),
+            ],
+        )
+        entry = write_csharp_result(
+            tmp_path,
+            [
+                (
+                    HINT_CASE_NAME,
+                    (
+                        ("区分・大機能・中機能・小機能", "[本体:出題]ヒントの表示"),
+                        ("種別", "単体テスト"),
+                        ("正常異常", "正常系"),
+                        ("Given1", "ログインしているとき"),
+                        ("When1", "ホーム画面で「探しに行く」を押す"),
+                        ("Then1", "出題の英文が表示される"),
+                        ("When2", "結果画面で「もう一度」を押す"),
+                        ("Then2", "新しい出題の英文が表示される"),
+                    ),
+                )
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_HINT)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"] == [
+            {
+                "G": "ログインしているとき",
+                "W": ["ホーム画面で「探しに行く」を押す"],
+                "T": "出題の英文が表示される",
+            },
+            {
+                "G": "",
+                "W": ["結果画面で「もう一度」を押す"],
+                "T": "新しい出題の英文が表示される",
+            },
+        ]
+
+    def test_機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能が本体出題ヒントの表示で_種別単体テスト_正常異常正常系_When1ホーム画面で探しに行くを押す_When1出題画面でヒントを押す_Then1出題の英文が表示される_When2結果画面でもう一度を押す_Then2新しい出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_1_つ目のステップの_When_は_ホーム画面で探しに行くを押す出題画面でヒントを押すになる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[本体:出題]ヒントの表示」で、種別「単体テスト」、正常異常「正常系」、When1「ホーム画面で「探しに行く」を押す」、When1「出題画面で「ヒント」を押す」、Then1「出題の英文が表示される」、When2「結果画面で「もう一度」を押す」、Then2「新しい出題の英文が表示される」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの 1 つ目のステップの When は、「ホーム画面で「探しに行く」を押す」「出題画面で「ヒント」を押す」になる",
+                ),
+            ],
+        )
+        entry = write_csharp_result(
+            tmp_path,
+            [
+                (
+                    HINT_CASE_NAME,
+                    (
+                        ("区分・大機能・中機能・小機能", "[本体:出題]ヒントの表示"),
+                        ("種別", "単体テスト"),
+                        ("正常異常", "正常系"),
+                        ("When1", "ホーム画面で「探しに行く」を押す"),
+                        ("When1", "出題画面で「ヒント」を押す"),
+                        ("Then1", "出題の英文が表示される"),
+                        ("When2", "結果画面で「もう一度」を押す"),
+                        ("Then2", "新しい出題の英文が表示される"),
+                    ),
+                )
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_HINT)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"][0]["W"] == [
+            "ホーム画面で「探しに行く」を押す",
+            "出題画面で「ヒント」を押す",
+        ]
+
+    def test_機能の一覧が_区分本体に大機能出題を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能が本体出題ヒントの表示で_種別単体テスト_正常異常正常系_When1ホーム画面で探しに行くを押す_Then出題の英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_番号の付いたキーと付かないキーが混ざっていることを示すエラーで止まる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「本体」に大機能「出題」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[本体:出題]ヒントの表示」で、種別「単体テスト」、正常異常「正常系」、When1「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」を持つケースがあるとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "番号の付いたキーと付かないキーが混ざっていることを示すエラーで止まる",
+                ),
+            ],
+        )
+        entry = write_csharp_result(
+            tmp_path,
+            [
+                (
+                    HINT_CASE_NAME,
+                    (
+                        ("区分・大機能・中機能・小機能", "[本体:出題]ヒントの表示"),
+                        ("種別", "単体テスト"),
+                        ("正常異常", "正常系"),
+                        ("When1", "ホーム画面で「探しに行く」を押す"),
+                        ("Then", "出題の英文が表示される"),
+                    ),
+                )
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_HINT)
+        result = run_catalog_generation(tmp_path, config)
+        assert_stopped_with_message(
+            result, "番号の付いたキーと付かないキーが混ざっている"
+        )
+
+
+class Test本体__テストケースカタログ__入力__ケースとして数えないテストの除外:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:注文]送料計算」のテスト「注文金額3000円で送料を計算すると、送料は無料になる」が種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持ち、ほかに、テスト実行ツールがファイルの読み込みごとに出す、名前が「loading test/shipping_fee_test.dart」で hidden が true のテストがあるとき",
+                lambda directory: write_dart_result(
+                    directory,
+                    [(SHIPPING_FEE_CASE_NAME, spec_prints(SHIPPING_FEE_PROPERTIES))],
+                    group_names=["[本体:注文]送料計算"],
+                    hidden_test_names=["loading test/shipping_fee_test.dart"],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Dartのテスト結果に_グループ本体注文送料計算のテスト注文金額3000円で送料を計算すると_送料は無料になるが種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持ち_ほかに_テスト実行ツールがファイルの読み込みごとに出す_名前がloading_testshipping_fee_testdartで_hidden_が_true_のテストがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るケースは_テスト注文金額3000円で送料を計算すると_送料は無料になるの_1_つだけになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる」が種別「単体テスト」、正常異常「正常系」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持ち、その上位のテスト「TestShippingFee」と「TestShippingFee/[本体:注文]送料計算」が項目を持たずに実行されているとき",
+                lambda directory: write_go_result(
+                    directory,
+                    [
+                        (
+                            f"TestShippingFee/[本体:注文]送料計算/{SHIPPING_FEE_CASE_NAME}",
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                    parent_tests=[
+                        "TestShippingFee",
+                        "TestShippingFee/[本体:注文]送料計算",
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になるが種別単体テスト_正常異常正常系_When注文金額3000円で送料を計算する_Then送料は無料になるを持ち_その上位のテストTestShippingFeeとTestShippingFee本体注文送料計算が項目を持たずに実行されているとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るケースは_テスト注文金額3000円で送料を計算すると_送料は無料になるの_1_つだけになる",
+            ),
+        ],
+    )
+    def test_excludes_tests_not_counted_as_cases(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            perspectives=["件数・有無"],
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るケースは、テスト「注文金額3000円で送料を計算すると、送料は無料になる」の 1 つだけになる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert [case["steps"][0]["T"] for case in page.catalog["cases"]] == [
+            "送料は無料になる"
+        ]
+
+
+class Test本体__テストケースカタログ__入力__言語ごとの観点の取り出し:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_orders.Test本体__注文__送料計算」で、種別「単体テスト」、正常異常「正常系」、観点「境界値」と「エッジケース」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_python_result(
+                    directory,
+                    [
+                        (
+                            "tests.test_orders.Test本体__注文__送料計算",
+                            SHIPPING_FEE_PERSPECTIVE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_ordersTest本体__注文__送料計算で_種別単体テスト_正常異常正常系_観点境界値とエッジケース_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの観点は境界値とエッジケースの_2_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「[本体:注文]送料計算」で、種別「単体テスト」、正常異常「正常系」、観点「境界値」と「エッジケース」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_kotlin_result(
+                    directory,
+                    [
+                        (
+                            "[本体:注文]送料計算",
+                            SHIPPING_FEE_CASE_NAME,
+                            SHIPPING_FEE_PERSPECTIVE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名が本体注文送料計算で_種別単体テスト_正常異常正常系_観点境界値とエッジケース_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの観点は境界値とエッジケースの_2_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる」で、種別「単体テスト」、正常異常「正常系」、観点「境界値」と「エッジケース」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_go_result(
+                    directory,
+                    [
+                        (
+                            f"TestShippingFee/[本体:注文]送料計算/{SHIPPING_FEE_CASE_NAME}",
+                            SHIPPING_FEE_PERSPECTIVE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になるで_種別単体テスト_正常異常正常系_観点境界値とエッジケース_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの観点は境界値とエッジケースの_2_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:注文]送料計算」のテスト「注文金額3000円で送料を計算すると、送料は無料になる」で、種別「単体テスト」、正常異常「正常系」、観点「境界値」と「エッジケース」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_dart_result(
+                    directory,
+                    [
+                        (
+                            SHIPPING_FEE_CASE_NAME,
+                            spec_prints(SHIPPING_FEE_PERSPECTIVE_PROPERTIES),
+                        )
+                    ],
+                    group_names=["[本体:注文]送料計算"],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Dartのテスト結果に_グループ本体注文送料計算のテスト注文金額3000円で送料を計算すると_送料は無料になるで_種別単体テスト_正常異常正常系_観点境界値とエッジケース_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの観点は境界値とエッジケースの_2_つになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「本体」に大機能「注文」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[本体:注文]送料計算」で、種別「単体テスト」、正常異常「正常系」、観点「境界値」と「エッジケース」、When「注文金額3000円で送料を計算する」、Then「送料は無料になる」を持つケースがあるとき",
+                lambda directory: write_csharp_result(
+                    directory,
+                    [
+                        (
+                            SHIPPING_FEE_CASE_NAME,
+                            (
+                                CSHARP_ORDER_FEATURE_NAME,
+                                *SHIPPING_FEE_PERSPECTIVE_PROPERTIES,
+                            ),
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分本体に大機能注文を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能が本体注文送料計算で_種別単体テスト_正常異常正常系_観点境界値とエッジケース_When注文金額3000円で送料を計算する_Then送料は無料になるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの観点は境界値とエッジケースの_2_つになる",
+            ),
+        ],
+    )
+    def test_extracts_perspectives_per_language(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの観点は「境界値」と「エッジケース」の 2 つになる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["g"] == ["境界値", "エッジケース"]
+
+
+class Test本体__テストケースカタログ__入力__言語ごとの環境の取り出し:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__ホーム画面から結果画面」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_python_result(
+                    directory,
+                    [
+                        (
+                            "tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__ホーム画面から結果画面",
+                            SCENARIO_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_purchaseTestシナリオ__商品を購入する__通常の動線__ホーム画面から結果画面で_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの環境はローカルdev環境になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_kotlin_result(
+                    directory,
+                    [
+                        (
+                            "[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面",
+                            SCENARIO_CASE_NAME,
+                            SCENARIO_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名がシナリオ商品を購入する通常の動線ホーム画面から結果画面で_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの環境はローカルdev環境になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestPurchase/[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面/ホーム画面で「探しに行く」を押すと、英文が表示される」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_go_result(
+                    directory,
+                    [
+                        (
+                            f"TestPurchase/[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面/{SCENARIO_CASE_NAME}",
+                            SCENARIO_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Goのテスト結果に_テストTestPurchaseシナリオ商品を購入する通常の動線ホーム画面から結果画面ホーム画面で探しに行くを押すと_英文が表示されるで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの環境はローカルdev環境になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面」のテスト「ホーム画面で「探しに行く」を押すと、英文が表示される」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_dart_result(
+                    directory,
+                    [(SCENARIO_CASE_NAME, spec_prints(SCENARIO_PROPERTIES))],
+                    group_names=[
+                        "[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面"
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Dartのテスト結果に_グループシナリオ商品を購入する通常の動線ホーム画面から結果画面のテストホーム画面で探しに行くを押すと_英文が表示されるで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの環境はローカルdev環境になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_csharp_result(
+                    directory,
+                    [
+                        (
+                            SCENARIO_CASE_NAME,
+                            (CSHARP_SCENARIO_FEATURE_NAME, *SCENARIO_PROPERTIES),
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能がシナリオ商品を購入する通常の動線ホーム画面から結果画面で_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの環境はローカルdev環境になる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「TypeScript」のテスト結果に、テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_typescript_result(
+                    directory, [(SCENARIO_TEST_NAME, SCENARIO_PROPERTIES)]
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語TypeScriptのテスト結果に_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの環境はローカルdev環境になる",
+            ),
+        ],
+    )
+    def test_extracts_environments_per_language(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの環境は「ローカル」「dev環境」になる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_SCENARIO)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["e"] == ["ローカル", "dev環境"]
+
+
+class Test本体__テストケースカタログ__入力__言語ごとの環境ごとの_Then_の取り出し:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__ホーム画面から結果画面」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_python_result(
+                    directory,
+                    [
+                        (
+                            "tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__ホーム画面から結果画面",
+                            SCENARIO_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_purchaseTestシナリオ__商品を購入する__通常の動線__ホーム画面から結果画面で_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_kotlin_result(
+                    directory,
+                    [
+                        (
+                            "[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面",
+                            SCENARIO_CASE_NAME,
+                            SCENARIO_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名がシナリオ商品を購入する通常の動線ホーム画面から結果画面で_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Go」のテスト結果に、テスト「TestPurchase/[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面/ホーム画面で「探しに行く」を押すと、英文が表示される」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_go_result(
+                    directory,
+                    [
+                        (
+                            f"TestPurchase/[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面/{SCENARIO_CASE_NAME}",
+                            SCENARIO_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Goのテスト結果に_テストTestPurchaseシナリオ商品を購入する通常の動線ホーム画面から結果画面ホーム画面で探しに行くを押すと_英文が表示されるで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「Dart」のテスト結果に、グループ「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面」のテスト「ホーム画面で「探しに行く」を押すと、英文が表示される」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_dart_result(
+                    directory,
+                    [(SCENARIO_CASE_NAME, spec_prints(SCENARIO_PROPERTIES))],
+                    group_names=[
+                        "[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面"
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Dartのテスト結果に_グループシナリオ商品を購入する通常の動線ホーム画面から結果画面のテストホーム画面で探しに行くを押すと_英文が表示されるで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_csharp_result(
+                    directory,
+                    [
+                        (
+                            SCENARIO_CASE_NAME,
+                            (CSHARP_SCENARIO_FEATURE_NAME, *SCENARIO_PROPERTIES),
+                        )
+                    ],
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語Cのテスト結果に_Trait区分大機能中機能小機能がシナリオ商品を購入する通常の動線ホーム画面から結果画面で_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるになる",
+            ),
+            pytest.param(
+                "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持ち、設定ファイルの言語「TypeScript」のテスト結果に、テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースがあるとき",
+                lambda directory: write_typescript_result(
+                    directory, [(SCENARIO_TEST_NAME, SCENARIO_PROPERTIES)]
+                ),
+                id="機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持ち_設定ファイルの言語TypeScriptのテスト結果に_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースがあるとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるになる",
+            ),
+        ],
+    )
+    def test_extracts_environment_thens_per_language(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースのステップの環境ごとの Then は、ローカルが「英文「Hello.」が表示される」、dev環境が「英単語を含む英文が表示される」になる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_SCENARIO)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"][0]["E"] == [
+            ["ローカル", "英文「Hello.」が表示される"],
+            ["dev環境", "英単語を含む英文が表示される"],
+        ]
+
+
+class Test本体__テストケースカタログ__入力__環境ごとの_Then_の読み取り:
+    def test_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるの順に並ぶ項目から_ステップを読み取ると_読み取ったステップは_Whenホーム画面で探しに行くを押す_Then_なし_環境ごとの_Then_はローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるの_1_つになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "When",
+                    "When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」の順に並ぶ項目から、ステップを読み取る",
+                ),
+                (
+                    "Then",
+                    "読み取ったステップは、When「ホーム画面で「探しに行く」を押す」、Then なし、環境ごとの Then はローカルが「英文「Hello.」が表示される」、dev環境が「英単語を含む英文が表示される」の 1 つになる",
+                ),
+            ],
+        )
+        steps = catalog.read_steps(
+            [
+                ("When", "ホーム画面で「探しに行く」を押す"),
+                ("Then:ローカル", "英文「Hello.」が表示される"),
+                ("Then:dev環境", "英単語を含む英文が表示される"),
+            ]
+        )
+        assert steps == [
+            {
+                "given": None,
+                "whens": ["ホーム画面で「探しに行く」を押す"],
+                "then": None,
+                "environment_thens": [
+                    ("ローカル", "英文「Hello.」が表示される"),
+                    ("dev環境", "英単語を含む英文が表示される"),
+                ],
+            }
+        ]
+
+    def test_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示される_When結果画面でもう一度を押す_Then新しい出題の英文が表示されるの順に並ぶ項目から_ステップを読み取ると_読み取ったステップは_1_つ目が_Whenホーム画面で探しに行くを押す_環境ごとの_Then_はローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示される_2_つ目が_When結果画面でもう一度を押す_Then新しい出題の英文が表示されるの_2_つになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "When",
+                    "When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」、When「結果画面で「もう一度」を押す」、Then「新しい出題の英文が表示される」の順に並ぶ項目から、ステップを読み取る",
+                ),
+                (
+                    "Then",
+                    "読み取ったステップは、1 つ目が When「ホーム画面で「探しに行く」を押す」、環境ごとの Then はローカルが「英文「Hello.」が表示される」、dev環境が「英単語を含む英文が表示される」、2 つ目が When「結果画面で「もう一度」を押す」、Then「新しい出題の英文が表示される」の 2 つになる",
+                ),
+            ],
+        )
+        steps = catalog.read_steps(
+            [
+                ("When", "ホーム画面で「探しに行く」を押す"),
+                ("Then:ローカル", "英文「Hello.」が表示される"),
+                ("Then:dev環境", "英単語を含む英文が表示される"),
+                ("When", "結果画面で「もう一度」を押す"),
+                ("Then", "新しい出題の英文が表示される"),
+            ]
+        )
+        assert steps == [
+            {
+                "given": None,
+                "whens": ["ホーム画面で「探しに行く」を押す"],
+                "then": None,
+                "environment_thens": [
+                    ("ローカル", "英文「Hello.」が表示される"),
+                    ("dev環境", "英単語を含む英文が表示される"),
+                ],
+            },
+            {
+                "given": None,
+                "whens": ["結果画面で「もう一度」を押す"],
+                "then": "新しい出題の英文が表示される",
+                "environment_thens": [],
+            },
+        ]
+
+    def test_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Then出題の英文が表示されるの順に並ぶ項目から_ステップを読み取ると_同じステップに_Then_と環境ごとの_Then_が混ざっていることを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "When",
+                    "When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then「出題の英文が表示される」の順に並ぶ項目から、ステップを読み取る",
+                ),
+                (
+                    "Then",
+                    "同じステップに Then と環境ごとの Then が混ざっていることを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_steps(
+                [
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                    ("Then", "出題の英文が表示される"),
+                ]
+            )
+        assert_message_contains(
+            error.value, "同じステップに Then と環境ごとの Then が混ざっている"
+        )
+
+    def test_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thenローカル別の英文が表示されるの順に並ぶ項目から_ステップを読み取ると_同じステップに環境ローカルの_Then_が_2_つあることを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "When",
+                    "When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:ローカル「別の英文が表示される」の順に並ぶ項目から、ステップを読み取る",
+                ),
+                (
+                    "Then",
+                    "同じステップに環境「ローカル」の Then が 2 つあることを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_steps(
+                [
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                    ("Then:ローカル", "別の英文が表示される"),
+                ]
+            )
+        assert_message_contains(
+            error.value, "同じステップに環境「ローカル」の Then が 2 つある"
+        )
+
+    def test_Whenホーム画面で探しに行くを押す_Then本番出題の英文が表示されるの順に並ぶ項目から_ステップを読み取ると_環境本番がローカルdev環境のいずれでもないことを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "When",
+                    "When「ホーム画面で「探しに行く」を押す」、Then:本番「出題の英文が表示される」の順に並ぶ項目から、ステップを読み取る",
+                ),
+                (
+                    "Then",
+                    "環境「本番」がローカル・dev環境のいずれでもないことを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_steps(
+                [
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:本番", "出題の英文が表示される"),
+                ]
+            )
+        assert_message_contains(
+            error.value, "環境「本番」", "ローカル・dev環境のいずれでもない"
+        )
+
+    def test_Thenローカル英文Helloが表示されるだけが並ぶ項目から_ステップを読み取ると_When_の無い_Then_があることを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "When",
+                    "Then:ローカル「英文「Hello.」が表示される」だけが並ぶ項目から、ステップを読み取る",
+                ),
+                ("Then", "When の無い Then があることを示すエラーになる"),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_steps([("Then:ローカル", "英文「Hello.」が表示される")])
+        assert_message_contains(error.value, "When の無い Then")
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境dev環境_環境ローカル_Givenログインしているとき_Whenホーム画面で探しに行くを押す_Thendev環境英単語を含む英文が表示される_Thenローカル英文Helloが表示されるを持つケースを読み取ると_読み取ったケースのステップの環境ごとの_Then_は_ローカルが英文Helloが表示される_dev環境が英単語を含む英文が表示されるの順になる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「dev環境」、環境「ローカル」、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」、Then:dev環境「英単語を含む英文が表示される」、Then:ローカル「英文「Hello.」が表示される」を持つケースを読み取る",
+                ),
+                (
+                    "Then",
+                    "読み取ったケースのステップの環境ごとの Then は、ローカルが「英文「Hello.」が表示される」、dev環境が「英単語を含む英文が表示される」の順になる",
+                ),
+            ],
+        )
+        case = catalog.read_typescript_case(
+            SCENARIO_TEST_NAME,
+            (
+                ("種別", "シナリオテスト"),
+                ("正常異常", "正常系"),
+                ("環境", "dev環境"),
+                ("環境", "ローカル"),
+                ("Given", "ログインしているとき"),
+                ("When", "ホーム画面で「探しに行く」を押す"),
+                ("Then:dev環境", "英単語を含む英文が表示される"),
+                ("Then:ローカル", "英文「Hello.」が表示される"),
+            ),
+            FEATURES_SCENARIO,
+        )
+        assert case["steps"][0]["environment_thens"] == [
+            ("ローカル", "英文「Hello.」が表示される"),
+            ("dev環境", "英単語を含む英文が表示される"),
+        ]
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英文Helloが表示されるを持つケースを読み取ると_環境ごとの_Then_が同じ内容なので_Then_を_1_つにするよう示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英文「Hello.」が表示される」を持つケースを読み取る",
+                ),
+                (
+                    "Then",
+                    "環境ごとの Then が同じ内容なので Then を 1 つにするよう示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "ローカル"),
+                    ("環境", "dev環境"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                    ("Then:dev環境", "英文「Hello.」が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(
+            error.value, "環境ごとの Then が同じ内容", "Then を 1 つにする"
+        )
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースを読み取ると_環境ごとの_Then_の環境が_ケースの環境と一致しないことを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースを読み取る",
+                ),
+                (
+                    "Then",
+                    "環境ごとの Then の環境が、ケースの環境と一致しないことを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "ローカル"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                    ("Then:dev環境", "英単語を含む英文が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(
+            error.value, "環境ごとの Then の環境が、ケースの環境と一致しない"
+        )
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_環境dev環境_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示されるを持つケースを読み取ると_環境ごとの_Then_の環境が_ケースの環境と一致しないことを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「dev環境」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」を持つケースを読み取る",
+                ),
+                (
+                    "Then",
+                    "環境ごとの Then の環境が、ケースの環境と一致しないことを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "ローカル"),
+                    ("環境", "dev環境"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(
+            error.value, "環境ごとの Then の環境が、ケースの環境と一致しない"
+        )
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示されるを持つケースを読み取ると_環境ごとの_Then_は_2_つ以上の環境で書くよう示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            perspectives=["境界値"],
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」を持つケースを読み取る",
+                ),
+                ("Then", "環境ごとの Then は 2 つ以上の環境で書くよう示すエラーになる"),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "ローカル"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(error.value, "環境ごとの Then は 2 つ以上の環境で書く")
+
+    def test_機能の一覧が_区分本体に大機能認証を持つとき_テスト名本体認証ログイン__未確認のアカウントでログインすると_確認を促すメッセージが表示されるで_種別単体テスト_正常異常正常系_Whenホーム画面で探しに行くを押す_Thenローカル英文Helloが表示される_Thendev環境英単語を含む英文が表示されるを持つケースを読み取ると_環境ごとの_Then_はシナリオテストだけに書けることを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                ("Given", "機能の一覧が、区分「本体」に大機能「認証」を持つとき"),
+                (
+                    "When",
+                    "テスト名「[本体:認証]ログイン > 未確認のアカウントでログインすると、確認を促すメッセージが表示される」で、種別「単体テスト」、正常異常「正常系」、When「ホーム画面で「探しに行く」を押す」、Then:ローカル「英文「Hello.」が表示される」、Then:dev環境「英単語を含む英文が表示される」を持つケースを読み取る",
+                ),
+                (
+                    "Then",
+                    "環境ごとの Then はシナリオテストだけに書けることを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                LOGIN_TEST_NAME,
+                (
+                    ("種別", "単体テスト"),
+                    ("正常異常", "正常系"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then:ローカル", "英文「Hello.」が表示される"),
+                    ("Then:dev環境", "英単語を含む英文が表示される"),
+                ),
+                FEATURES_AUTH,
+            )
+        assert_message_contains(
+            error.value, "環境ごとの Then はシナリオテストだけに書ける"
+        )
+
+
+class Test本体__テストケースカタログ__入力__環境の読み取り:
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境dev環境_環境ローカル_Givenログインしているとき_Whenホーム画面で探しに行くを押す_Thendev環境英単語を含む英文が表示される_Thenローカル英文Helloが表示されるを持つケースを読み取ると_読み取ったケースの環境はローカルdev環境の順になる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「dev環境」、環境「ローカル」、Given「ログインしているとき」、When「ホーム画面で「探しに行く」を押す」、Then:dev環境「英単語を含む英文が表示される」、Then:ローカル「英文「Hello.」が表示される」を持つケースを読み取る",
+                ),
+                ("Then", "読み取ったケースの環境は「ローカル」「dev環境」の順になる"),
+            ],
+        )
+        case = catalog.read_typescript_case(
+            SCENARIO_TEST_NAME,
+            (
+                ("種別", "シナリオテスト"),
+                ("正常異常", "正常系"),
+                ("環境", "dev環境"),
+                ("環境", "ローカル"),
+                ("Given", "ログインしているとき"),
+                ("When", "ホーム画面で「探しに行く」を押す"),
+                ("Then:dev環境", "英単語を含む英文が表示される"),
+                ("Then:ローカル", "英文「Hello.」が表示される"),
+            ),
+            FEATURES_SCENARIO,
+        )
+        assert case["environments"] == ["ローカル", "dev環境"]
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_Whenホーム画面で探しに行くを押す_Then出題の英文が表示されるを持つケースを読み取ると_読み取ったケースの環境はローカルの_1_つになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="正常系",
+            perspectives=["件数・有無"],
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、When「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」を持つケースを読み取る",
+                ),
+                ("Then", "読み取ったケースの環境は「ローカル」の 1 つになる"),
+            ],
+        )
+        case = catalog.read_typescript_case(
+            SCENARIO_TEST_NAME,
+            (
+                ("種別", "シナリオテスト"),
+                ("正常異常", "正常系"),
+                ("環境", "ローカル"),
+                ("When", "ホーム画面で「探しに行く」を押す"),
+                ("Then", "出題の英文が表示される"),
+            ),
+            FEATURES_SCENARIO,
+        )
+        assert case["environments"] == ["ローカル"]
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別単体テスト_正常異常正常系_環境ローカル_Whenホーム画面で探しに行くを押す_Then出題の英文が表示されるを持つケースを読み取ると_環境はシナリオテストだけが持つことを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「単体テスト」、正常異常「正常系」、環境「ローカル」、When「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」を持つケースを読み取る",
+                ),
+                ("Then", "環境はシナリオテストだけが持つことを示すエラーになる"),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "単体テスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "ローカル"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then", "出題の英文が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(error.value, "環境はシナリオテストだけが持つ")
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_Whenホーム画面で探しに行くを押す_Then出題の英文が表示されるを持ち_環境を持たないケースを読み取ると_シナリオテストには環境が必要であることを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            perspectives=["件数・有無"],
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、When「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」を持ち、環境を持たないケースを読み取る",
+                ),
+                ("Then", "シナリオテストには環境が必要であることを示すエラーになる"),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then", "出題の英文が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(error.value, "シナリオテストには環境が必要")
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境ローカル_環境ローカル_Whenホーム画面で探しに行くを押す_Then出題の英文が表示されるを持つケースを読み取ると_環境が重複していることを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「ローカル」、環境「ローカル」、When「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」を持つケースを読み取る",
+                ),
+                ("Then", "環境が重複していることを示すエラーになる"),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "ローカル"),
+                    ("環境", "ローカル"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then", "出題の英文が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(error.value, "環境が重複している")
+
+    def test_機能の一覧が_区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_テスト名シナリオ商品を購入する通常の動線ホーム画面から結果画面__ホーム画面で探しに行くを押すで_種別シナリオテスト_正常異常正常系_環境本番_Whenホーム画面で探しに行くを押す_Then出題の英文が表示されるを持つケースを読み取ると_環境本番がローカルdev環境のいずれでもないことを示すエラーになる(
+        self, record_case
+    ):
+        record_case(
+            kind="単体テスト",
+            normal_or_abnormal="異常系",
+            items=[
+                (
+                    "Given",
+                    "機能の一覧が、区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                (
+                    "When",
+                    "テスト名「[シナリオ:商品を購入する:通常の動線]ホーム画面から結果画面 > ホーム画面で「探しに行く」を押す」で、種別「シナリオテスト」、正常異常「正常系」、環境「本番」、When「ホーム画面で「探しに行く」を押す」、Then「出題の英文が表示される」を持つケースを読み取る",
+                ),
+                (
+                    "Then",
+                    "環境「本番」がローカル・dev環境のいずれでもないことを示すエラーになる",
+                ),
+            ],
+        )
+        with pytest.raises(catalog.CatalogError) as error:
+            catalog.read_typescript_case(
+                SCENARIO_TEST_NAME,
+                (
+                    ("種別", "シナリオテスト"),
+                    ("正常異常", "正常系"),
+                    ("環境", "本番"),
+                    ("When", "ホーム画面で「探しに行く」を押す"),
+                    ("Then", "出題の英文が表示される"),
+                ),
+                FEATURES_SCENARIO,
+            )
+        assert_message_contains(
+            error.value, "環境「本番」", "ローカル・dev環境のいずれでもない"
+        )
