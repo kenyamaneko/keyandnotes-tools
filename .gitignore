@@ -1,0 +1,7 @@
+node_modules
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Tailwind が生成する CSS は生成物のため、Git の管理から外す
+test_case_catalog/test_case_catalog.css
