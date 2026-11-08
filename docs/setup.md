@@ -37,3 +37,36 @@ jq --arg commit "$GITHUB_SHA" --arg css "tools/test_case_catalog/test_case_catal
 | `results` | ○ | テスト結果の配列。要素は、言語 `language` (`TypeScript`・`Python`・`C#`・`Kotlin`・`Go`・`Dart` のいずれか) と、テスト結果のパス `path` |
 | `features` | ○ | 区分ごとの、大機能の並びと中機能の並び。カタログはこの順に並ぶ。ここにない大機能・中機能のテストがあるとエラーになる |
 | `commit` | | 生成元 commit の SHA。省略するとカタログに表示しない |
+
+## バージョンタグを打つワークフロー
+
+各リポのリリースのワークフローから、タグを指定して `create-version-tag.yml` を呼ぶ。デプロイのジョブは `needs` でつなぎ、打ったバージョンタグを `needs.<ジョブ名>.outputs.version_tag` で受け取る。`GITHUB_TOKEN` で打ち込んだタグは別のワークフローを起動しないため、同じワークフローの中でつなぐ。
+
+```yaml
+jobs:
+  version_tag:
+    uses: kenyamaneko/keyandnotes-tools/.github/workflows/create-version-tag.yml@vX.Y.Z
+    permissions:
+      contents: write
+    with:
+      bump_kind: ${{ inputs.bump_kind }}
+
+  deploy:
+    needs: version_tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Show deployed version tag
+        env:
+          VERSION_TAG: ${{ needs.version_tag.outputs.version_tag }}
+        run: echo "$VERSION_TAG"
+```
+
+| 項目 | 内容 |
+|---|---|
+| 入力 `bump_kind` | バージョンアップの種類。`patch`・`minor`・`major` のいずれか |
+| 出力 `version_tag` | 打ったバージョンタグ |
+| タグを打つ先 | 呼び出し元のワークフローが実行されたコミット |
+| 呼び出し元が与える権限 | `contents: write` |
+
+リモートにバージョンタグ (`vX.Y.Z`) が 1 つも無いリポでは、失敗する。最初のバージョンタグは手で打つ。

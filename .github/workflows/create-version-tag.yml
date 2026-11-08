@@ -1,0 +1,53 @@
+name: Create Version Tag
+
+on:
+  workflow_call:
+    inputs:
+      bump_kind:
+        description: バージョンアップの種類 (patch・minor・major)
+        required: true
+        type: string
+    outputs:
+      version_tag:
+        description: 打ったバージョンタグ
+        value: ${{ jobs.create_version_tag.outputs.version_tag }}
+
+concurrency:
+  group: create-version-tag-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  create_version_tag:
+    name: Create version tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      version_tag: ${{ steps.create_version_tag.outputs.version_tag }}
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v7
+
+      # github.workflow_sha は呼び出し元のコミットを指すため、呼ばれた側のコミットは job.workflow_sha で取る
+      - name: Checkout keyandnotes-tools
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: keyandnotes-tools
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Create version tag
+        id: create_version_tag
+        env:
+          BUMP_KIND: ${{ inputs.bump_kind }}
+          PYTHONPATH: keyandnotes-tools
+        run: |
+          version_tag=$(python -m version_tag.main --bump-kind "$BUMP_KIND")
+          echo "version_tag=$version_tag" >> "$GITHUB_OUTPUT"
