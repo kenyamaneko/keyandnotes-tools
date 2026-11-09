@@ -6,7 +6,7 @@
 
 - ブランチ戦略は keyandnotes-rules の GitHub Flow に従う
 - デプロイ戦略は keyandnotes-rules の Artifact Publish に従う
-- タグを打つと版が確定する。各リポの CI は、タグを指定して本リポを取得する
+- タグを打つと版が確定する。各リポジトリの CI は、タグを指定して本リポジトリを取得する
 
 ## [keyandnotes-tools] バージョニング
 
