@@ -16,11 +16,11 @@
 1. `npm ci`
 2. `npm run build:css`
 
-## 各リポからの使い方
+## 各リポジトリからの使い方
 
-1. 本リポをタグを指定してチェックアウトする
+1. 本リポジトリをタグを指定してチェックアウトする
 2. チェックアウトしたディレクトリで、「テストケースカタログの CSS」の手順を実行する
-3. 各リポに、変わらない項目 (`title`・`features`) だけを書いた JSON を置く
+3. 各リポジトリに、変わらない項目 (`title`・`features`) だけを書いた JSON を置く
 4. CI で、実行のたびに変わる項目 (`commit`・`results`・`css`) を `jq` で足した JSON を作る
 5. `python <チェックアウト先>/test_case_catalog/generate_test_case_catalog.py --config <手順 4 の JSON のパス>` を実行する。カタログの HTML が標準出力へ出る
 
@@ -42,7 +42,7 @@ jq --arg commit "$GITHUB_SHA" --arg css "tools/test_case_catalog/test_case_catal
 
 ## バージョンタグを打つワークフロー
 
-各リポのリリースのワークフローから、タグを指定して `create-version-tag.yml` を呼ぶ。デプロイのジョブは `needs` でつなぎ、打ったバージョンタグを `needs.<ジョブ名>.outputs.version_tag` で受け取る。`GITHUB_TOKEN` で打ち込んだタグは別のワークフローを起動しないため、同じワークフローの中でつなぐ。
+各リポジトリのリリースのワークフローから、タグを指定して `create-version-tag.yml` を呼ぶ。デプロイのジョブは `needs` でつなぎ、打ったバージョンタグを `needs.<ジョブ名>.outputs.version_tag` で受け取る。`GITHUB_TOKEN` で打ち込んだタグは別のワークフローを起動しないため、同じワークフローの中でつなぐ。
 
 ```yaml
 jobs:
@@ -71,4 +71,4 @@ jobs:
 | タグを打つ先 | 呼び出し元のワークフローが実行されたコミット |
 | 呼び出し元が与える権限 | `contents: write` |
 
-リモートにバージョンタグ (`vX.Y.Z`) が 1 つも無いリポでは、失敗する。最初のバージョンタグは手で打つ。
+リモートにバージョンタグ (`vX.Y.Z`) が 1 つも無いリポジトリでは、失敗する。最初のバージョンタグは手で打つ。
