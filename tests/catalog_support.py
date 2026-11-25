@@ -12,6 +12,7 @@ GENERATION_TIMEOUT_SECONDS = 60
 REGIONS = ("本体", "共通", "運用", "外部連携", "シナリオ")
 GO_EVENT_TIME = "2026-11-07T00:00:00+09:00"
 DART_LOADING_SUITE_PATH = "test/shipping_fee_test.dart"
+SKIPPED_OUTCOME_TAGS = ("skipped",)
 
 
 @dataclass(frozen=True)
@@ -122,10 +123,12 @@ def write_result_file(directory, filename, content):
     return path
 
 
-def _build_junit_testcase(classname, name, properties):
+def _build_junit_testcase(classname, name, properties, outcome_tags=()):
     testcase = ElementTree.Element(
         "testcase", {"classname": classname, "name": name, "time": "0.000"}
     )
+    for tag in outcome_tags:
+        ElementTree.SubElement(testcase, tag)
     properties_element = ElementTree.SubElement(testcase, "properties")
     for key, value in properties:
         ElementTree.SubElement(
@@ -144,18 +147,44 @@ def _write_junit_xml(directory, filename, suites):
     return path
 
 
+def _write_typescript_result(directory, testcases, filename, outcome_tags):
+    built = [
+        _build_junit_testcase("example.test.ts", name, properties, outcome_tags)
+        for name, properties in testcases
+    ]
+    path = _write_junit_xml(directory, filename, [("example.test.ts", built)])
+    return build_result_entry("TypeScript", path)
+
+
 def write_typescript_result(directory, testcases, filename="typescript.xml"):
     """TypeScript のテスト結果 (JUnit XML) を書き、設定ファイルの results の要素を返す。
 
     Args:
         testcases: (テスト名, 項目の並び) の並び。
     """
+    return _write_typescript_result(directory, testcases, filename, ())
+
+
+def write_typescript_skipped_result(
+    directory, testcases, filename="typescript_skipped.xml"
+):
+    """すべてのケースをスキップしたと記録した TypeScript のテスト結果 (JUnit XML) を書く。
+
+    Args:
+        testcases: (テスト名, 項目の並び) の並び。
+    """
+    return _write_typescript_result(
+        directory, testcases, filename, SKIPPED_OUTCOME_TAGS
+    )
+
+
+def _write_python_result(directory, testcases, filename, outcome_tags):
     built = [
-        _build_junit_testcase("example.test.ts", name, properties)
-        for name, properties in testcases
+        _build_junit_testcase(classname, "test_case", properties, outcome_tags)
+        for classname, properties in testcases
     ]
-    path = _write_junit_xml(directory, filename, [("example.test.ts", built)])
-    return build_result_entry("TypeScript", path)
+    path = _write_junit_xml(directory, filename, [("pytest", built)])
+    return build_result_entry("Python", path)
 
 
 def write_python_result(directory, testcases, filename="python.xml"):
@@ -164,12 +193,25 @@ def write_python_result(directory, testcases, filename="python.xml"):
     Args:
         testcases: (classname 属性, 項目の並び) の並び。
     """
+    return _write_python_result(directory, testcases, filename, ())
+
+
+def write_python_skipped_result(directory, testcases, filename="python_skipped.xml"):
+    """すべてのケースをスキップしたと記録した Python のテスト結果 (pytest の JUnit XML) を書く。
+
+    Args:
+        testcases: (classname 属性, 項目の並び) の並び。
+    """
+    return _write_python_result(directory, testcases, filename, SKIPPED_OUTCOME_TAGS)
+
+
+def _write_csharp_result(directory, testcases, filename, outcome_tags):
     built = [
-        _build_junit_testcase(classname, "test_case", properties)
-        for classname, properties in testcases
+        _build_junit_testcase("ExampleTests", name, properties, outcome_tags)
+        for name, properties in testcases
     ]
-    path = _write_junit_xml(directory, filename, [("pytest", built)])
-    return build_result_entry("Python", path)
+    path = _write_junit_xml(directory, filename, [("ExampleTests", built)])
+    return build_result_entry("C#", path)
 
 
 def write_csharp_result(directory, testcases, filename="csharp.xml"):
@@ -178,12 +220,28 @@ def write_csharp_result(directory, testcases, filename="csharp.xml"):
     Args:
         testcases: (ケースの DisplayName, Trait を含む項目の並び) の並び。
     """
-    built = [
-        _build_junit_testcase("ExampleTests", name, properties)
-        for name, properties in testcases
+    return _write_csharp_result(directory, testcases, filename, ())
+
+
+def write_csharp_skipped_result(directory, testcases, filename="csharp_skipped.xml"):
+    """すべてのケースをスキップしたと記録した C# のテスト結果 (JUnit XML) を書く。
+
+    Args:
+        testcases: (ケースの DisplayName, Trait を含む項目の並び) の並び。
+    """
+    return _write_csharp_result(directory, testcases, filename, SKIPPED_OUTCOME_TAGS)
+
+
+def _write_kotlin_result(directory, testcases, filename, outcome_tags):
+    suites = [
+        (
+            class_display_name,
+            [_build_junit_testcase("ExampleTest", name, properties, outcome_tags)],
+        )
+        for class_display_name, name, properties in testcases
     ]
-    path = _write_junit_xml(directory, filename, [("ExampleTests", built)])
-    return build_result_entry("C#", path)
+    path = _write_junit_xml(directory, filename, suites)
+    return build_result_entry("Kotlin", path)
 
 
 def write_kotlin_result(directory, testcases, filename="kotlin.xml"):
@@ -193,15 +251,17 @@ def write_kotlin_result(directory, testcases, filename="kotlin.xml"):
         testcases: (テストクラスの表示名, ケース名, 項目の並び) の並び。
             テストクラスの表示名が testsuite 要素の name 属性になる。
     """
-    suites = [
-        (
-            class_display_name,
-            [_build_junit_testcase("ExampleTest", name, properties)],
-        )
-        for class_display_name, name, properties in testcases
-    ]
-    path = _write_junit_xml(directory, filename, suites)
-    return build_result_entry("Kotlin", path)
+    return _write_kotlin_result(directory, testcases, filename, ())
+
+
+def write_kotlin_skipped_result(directory, testcases, filename="kotlin_skipped.xml"):
+    """すべてのケースをスキップしたと記録した Kotlin のテスト結果 (Gradle の JUnit XML) を書く。
+
+    Args:
+        testcases: (テストクラスの表示名, ケース名, 項目の並び) の並び。
+            テストクラスの表示名が testsuite 要素の name 属性になる。
+    """
+    return _write_kotlin_result(directory, testcases, filename, SKIPPED_OUTCOME_TAGS)
 
 
 def _go_event(action, **fields):
@@ -215,15 +275,26 @@ def _write_go_events(directory, filename, events):
     return build_result_entry("Go", path)
 
 
-def _build_go_events(tests, parent_tests, attr_events):
+def _build_go_events(tests, parent_tests, attr_events, case_action="pass"):
     names = [name for name, _ in tests]
     return (
         [_go_event("start")]
         + [_go_event("run", Test=name) for name in [*parent_tests, *names]]
         + attr_events
-        + [_go_event("pass", Test=name, Elapsed=0) for name in [*names, *parent_tests]]
+        + [_go_event(case_action, Test=name, Elapsed=0) for name in names]
+        + [_go_event("pass", Test=name, Elapsed=0) for name in parent_tests]
         + [_go_event("pass", Elapsed=0)]
     )
+
+
+def _write_go_result(directory, tests, parent_tests, filename, case_action):
+    attr_events = [
+        _go_event("attr", Test=name, Key=key, Value=value)
+        for name, properties in tests
+        for key, value in properties
+    ]
+    events = _build_go_events(tests, parent_tests, attr_events, case_action)
+    return _write_go_events(directory, filename, events)
 
 
 def write_go_result(directory, tests, parent_tests=(), filename="go.jsonl"):
@@ -233,13 +304,19 @@ def write_go_result(directory, tests, parent_tests=(), filename="go.jsonl"):
         tests: (`/` でつないだテスト名, 項目の並び) の並び。項目はテストごとに続けて出る。
         parent_tests: 項目を持たずに実行される上位のテスト名の並び。
     """
-    attr_events = [
-        _go_event("attr", Test=name, Key=key, Value=value)
-        for name, properties in tests
-        for key, value in properties
-    ]
-    events = _build_go_events(tests, parent_tests, attr_events)
-    return _write_go_events(directory, filename, events)
+    return _write_go_result(directory, tests, parent_tests, filename, "pass")
+
+
+def write_go_skipped_result(
+    directory, tests, parent_tests=(), filename="go_skipped.jsonl"
+):
+    """tests のすべてのケースをスキップしたと記録した Go のテスト結果を書く。
+
+    Args:
+        tests: (`/` でつないだテスト名, 項目の並び) の並び。項目はテストごとに続けて出る。
+        parent_tests: 項目を持たずに実行される上位のテスト名の並び。
+    """
+    return _write_go_result(directory, tests, parent_tests, filename, "skip")
 
 
 def write_go_interleaved_result(directory, tests, filename="go_interleaved.jsonl"):
@@ -260,16 +337,9 @@ def write_go_interleaved_result(directory, tests, filename="go_interleaved.jsonl
     return _write_go_events(directory, filename, events)
 
 
-def write_dart_result(
-    directory, tests, group_names=(), hidden_test_names=(), filename="dart.jsonl"
+def _write_dart_result(
+    directory, tests, group_names, hidden_test_names, filename, test_done_skipped
 ):
-    """Dart のテスト結果 (`dart test -r json`) を書き、設定ファイルの results の要素を返す。
-
-    Args:
-        tests: (ケース名, テストが出力する行の並び) の並び。
-        group_names: 外側から順に入れ子にした group の名前。空ならグループに入らない。
-        hidden_test_names: テスト実行ツールがファイルの読み込みごとに出す hidden のテストの名前。
-    """
     suite = {"id": 0, "platform": "vm", "path": DART_LOADING_SUITE_PATH}
     metadata = {"skip": False, "skipReason": None}
     hidden_ids = list(range(1, len(hidden_test_names) + 1))
@@ -356,7 +426,7 @@ def write_dart_result(
             {
                 "testID": test_id,
                 "result": "success",
-                "skipped": False,
+                "skipped": test_done_skipped,
                 "hidden": False,
                 "type": "testDone",
                 "time": 5,
@@ -369,6 +439,33 @@ def write_dart_result(
         encoding="utf-8",
     )
     return build_result_entry("Dart", path)
+
+
+def write_dart_result(
+    directory, tests, group_names=(), hidden_test_names=(), filename="dart.jsonl"
+):
+    """Dart のテスト結果 (`dart test -r json`) を書き、設定ファイルの results の要素を返す。
+
+    Args:
+        tests: (ケース名, テストが出力する行の並び) の並び。
+        group_names: 外側から順に入れ子にした group の名前。空ならグループに入らない。
+        hidden_test_names: テスト実行ツールがファイルの読み込みごとに出す hidden のテストの名前。
+    """
+    return _write_dart_result(
+        directory, tests, group_names, hidden_test_names, filename, False
+    )
+
+
+def write_dart_skipped_result(
+    directory, tests, group_names=(), filename="dart_skipped.jsonl"
+):
+    """tests のすべてのケースをスキップしたと記録した Dart のテスト結果を書く。
+
+    Args:
+        tests: (ケース名, テストが出力する行の並び) の並び。
+        group_names: 外側から順に入れ子にした group の名前。空ならグループに入らない。
+    """
+    return _write_dart_result(directory, tests, group_names, (), filename, True)
 
 
 def run_catalog_generation(directory, config):
