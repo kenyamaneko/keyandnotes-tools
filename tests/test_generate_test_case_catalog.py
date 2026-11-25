@@ -11,13 +11,19 @@ from catalog_support import (
     run_catalog_generation,
     spec_prints,
     write_csharp_result,
+    write_csharp_skipped_result,
     write_dart_result,
+    write_dart_skipped_result,
     write_go_interleaved_result,
     write_go_result,
+    write_go_skipped_result,
     write_kotlin_result,
+    write_kotlin_skipped_result,
     write_python_result,
+    write_python_skipped_result,
     write_result_file,
     write_typescript_result,
+    write_typescript_skipped_result,
 )
 
 import test_case_catalog.generate_test_case_catalog as catalog
@@ -81,6 +87,27 @@ FEATURES_ORDER = build_features_of_region("本体", ["注文"])
 FEATURES_HINT = build_features_of_region("本体", ["出題"])
 FEATURES_SCENARIO = build_features_of_region(
     "シナリオ", ["商品を購入する"], ["通常の動線"]
+)
+SKIPPED_ORDER_CONFIRMATION_CLASS_NAME = "tests.test_order.Test本体__注文__注文確定"
+SKIPPED_ORDER_CONFIRMATION_PROPERTIES = (
+    ("種別", "単体テスト"),
+    ("正常異常", "正常系"),
+    ("When", "注文確定ボタンを押す"),
+    ("Then", "決済に失敗したことを示すエラーが表示される"),
+    ("When", "注文確定ボタンを押す"),
+    ("Then", "注文完了画面が表示される"),
+)
+SKIPPED_PURCHASE_CLASS_NAME = "tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面"
+SKIPPED_PURCHASE_PROPERTIES = (
+    ("種別", "シナリオテスト"),
+    ("正常異常", "正常系"),
+    ("環境", "ローカル"),
+    ("環境", "dev環境"),
+    ("When", "カート画面で配送先に「北海道」を選ぶ"),
+    ("Then", "配送先に「北海道」が表示される"),
+    ("When", "カート画面で「注文する」を押す"),
+    ("Then:ローカル", "配送料は 500 円になる"),
+    ("Then:dev環境", "配送料は配送業者の見積もり金額になる"),
 )
 
 
@@ -3540,4 +3567,260 @@ class Test本体__テストケースカタログ__入力__環境の読み取り:
             )
         assert_message_contains(
             error.value, "環境「本番」", "ローカル・dev環境のいずれでもない"
+        )
+
+
+class Test本体__テストケースカタログ__入力__言語ごとのスキップの取り出し:
+    @pytest.mark.parametrize(
+        ("given", "write_result"),
+        [
+            pytest.param(
+                "設定ファイルの言語「TypeScript」のテスト結果に、テスト名「[本体:注文]送料計算 > 注文金額3000円で送料を計算すると、送料は無料になる」で、Then「送料は無料になる」を持つスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                lambda directory: write_typescript_skipped_result(
+                    directory,
+                    [
+                        (
+                            f"[本体:注文]送料計算 > {SHIPPING_FEE_CASE_NAME}",
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="設定ファイルの言語TypeScriptのテスト結果に_テスト名本体注文送料計算__注文金額3000円で送料を計算すると_送料は無料になるで_Then送料は無料になるを持つスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_Then_は送料は無料になるスキップ中のため未検証になる",
+            ),
+            pytest.param(
+                "設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_shipping_fee.Test本体__注文__送料計算」で、Then「送料は無料になる」を持つスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                lambda directory: write_python_skipped_result(
+                    directory,
+                    [
+                        (
+                            "tests.test_shipping_fee.Test本体__注文__送料計算",
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="設定ファイルの言語Pythonのテスト結果に_クラス名teststest_shipping_feeTest本体__注文__送料計算で_Then送料は無料になるを持つスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_Then_は送料は無料になるスキップ中のため未検証になる",
+            ),
+            pytest.param(
+                "設定ファイルの言語「C#」のテスト結果に、Trait「区分・大機能・中機能・小機能」が「[本体:注文]送料計算」で、Then「送料は無料になる」を持つスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                lambda directory: write_csharp_skipped_result(
+                    directory,
+                    [
+                        (
+                            SHIPPING_FEE_CASE_NAME,
+                            (CSHARP_ORDER_FEATURE_NAME, *SHIPPING_FEE_PROPERTIES),
+                        )
+                    ],
+                ),
+                id="設定ファイルの言語Cシャープのテスト結果に_Trait区分大機能中機能小機能が本体注文送料計算で_Then送料は無料になるを持つスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_Then_は送料は無料になるスキップ中のため未検証になる",
+            ),
+            pytest.param(
+                "設定ファイルの言語「Kotlin」のテスト結果に、テストクラスの表示名が「[本体:注文]送料計算」で、Then「送料は無料になる」を持つスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                lambda directory: write_kotlin_skipped_result(
+                    directory,
+                    [
+                        (
+                            "[本体:注文]送料計算",
+                            SHIPPING_FEE_CASE_NAME,
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="設定ファイルの言語Kotlinのテスト結果に_テストクラスの表示名が本体注文送料計算で_Then送料は無料になるを持つスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_Then_は送料は無料になるスキップ中のため未検証になる",
+            ),
+            pytest.param(
+                "設定ファイルの言語「Go」のテスト結果に、テスト「TestShippingFee/[本体:注文]送料計算/注文金額3000円で送料を計算すると、送料は無料になる」で、Then「送料は無料になる」を持つスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                lambda directory: write_go_skipped_result(
+                    directory,
+                    [
+                        (
+                            f"TestShippingFee/[本体:注文]送料計算/{SHIPPING_FEE_CASE_NAME}",
+                            SHIPPING_FEE_PROPERTIES,
+                        )
+                    ],
+                ),
+                id="設定ファイルの言語Goのテスト結果に_テストTestShippingFee本体注文送料計算注文金額3000円で送料を計算すると_送料は無料になるで_Then送料は無料になるを持つスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_Then_は送料は無料になるスキップ中のため未検証になる",
+            ),
+            pytest.param(
+                "設定ファイルの言語「Dart」のテスト結果に、グループ「[本体:注文]送料計算」のテスト「注文金額3000円で送料を計算すると、送料は無料になる」で、Then「送料は無料になる」を持つスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                lambda directory: write_dart_skipped_result(
+                    directory,
+                    [(SHIPPING_FEE_CASE_NAME, spec_prints(SHIPPING_FEE_PROPERTIES))],
+                    group_names=["[本体:注文]送料計算"],
+                ),
+                id="設定ファイルの言語Dartのテスト結果に_グループ本体注文送料計算のテスト注文金額3000円で送料を計算すると_送料は無料になるで_Then送料は無料になるを持つスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_Then_は送料は無料になるスキップ中のため未検証になる",
+            ),
+        ],
+    )
+    def test_extracts_skipped_case_per_language(
+        self, record_case, tmp_path, given, write_result
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                ("Given", given),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの Then は「送料は無料になる（スキップ中のため未検証）」になる",
+                ),
+            ],
+        )
+        entry = write_result(tmp_path)
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"][0]["T"] == (
+            "送料は無料になる（スキップ中のため未検証）"
+        )
+
+
+class Test本体__テストケースカタログ__画面表示__スキップしたケースの表示:
+    def test_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_orderTest本体__注文__注文確定で_1_つ目のステップの_Then決済に失敗したことを示すエラーが表示されるを持つ_2_ステップのスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_1_つ目のステップの_Then_は決済に失敗したことを示すエラーが表示されるスキップ中のため未検証になる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_order.Test本体__注文__注文確定」で、1 つ目のステップの Then「決済に失敗したことを示すエラーが表示される」を持つ 2 ステップのスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの 1 つ目のステップの Then は「決済に失敗したことを示すエラーが表示される（スキップ中のため未検証）」になる",
+                ),
+            ],
+        )
+        entry = write_python_skipped_result(
+            tmp_path,
+            [
+                (
+                    SKIPPED_ORDER_CONFIRMATION_CLASS_NAME,
+                    SKIPPED_ORDER_CONFIRMATION_PROPERTIES,
+                )
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"][0]["T"] == (
+            "決済に失敗したことを示すエラーが表示される（スキップ中のため未検証）"
+        )
+
+    def test_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_orderTest本体__注文__注文確定で_2_つ目のステップの_Then注文完了画面が表示されるを持つ_2_ステップのスキップしたケースがあり_機能の一覧が区分本体に大機能注文を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_2_つ目のステップの_Then_は注文完了画面が表示されるスキップ中のため未検証になる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_order.Test本体__注文__注文確定」で、2 つ目のステップの Then「注文完了画面が表示される」を持つ 2 ステップのスキップしたケースがあり、機能の一覧が区分「本体」に大機能「注文」を持つとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの 2 つ目のステップの Then は「注文完了画面が表示される（スキップ中のため未検証）」になる",
+                ),
+            ],
+        )
+        entry = write_python_skipped_result(
+            tmp_path,
+            [
+                (
+                    SKIPPED_ORDER_CONFIRMATION_CLASS_NAME,
+                    SKIPPED_ORDER_CONFIRMATION_PROPERTIES,
+                )
+            ],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_ORDER)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"][1]["T"] == (
+            "注文完了画面が表示される（スキップ中のため未検証）"
+        )
+
+    def test_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_purchaseTestシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面で_環境ローカルとdev環境を持ち_1_つ目のステップの_Then配送先に北海道が表示されるを持つ_2_ステップのスキップしたケースがあり_機能の一覧が区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_1_つ目のステップの_Then_は配送先に北海道が表示されるスキップ中のため未検証になる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面」で、環境「ローカル」と「dev環境」を持ち、1 つ目のステップの Then「配送先に「北海道」が表示される」を持つ 2 ステップのスキップしたケースがあり、機能の一覧が区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの 1 つ目のステップの Then は「配送先に「北海道」が表示される（スキップ中のため未検証）」になる",
+                ),
+            ],
+        )
+        entry = write_python_skipped_result(
+            tmp_path,
+            [(SKIPPED_PURCHASE_CLASS_NAME, SKIPPED_PURCHASE_PROPERTIES)],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_SCENARIO)
+        page = generate_catalog_page(tmp_path, config)
+        assert page.catalog["cases"][0]["steps"][0]["T"] == (
+            "配送先に「北海道」が表示される（スキップ中のため未検証）"
+        )
+
+    def test_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_purchaseTestシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面で_環境ローカルとdev環境を持ち_2_つ目のステップの_Thenローカル配送料は_500_円になるを持つ_2_ステップのスキップしたケースがあり_機能の一覧が区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_2_つ目のステップの環境ローカルの_Then_は配送料は_500_円になるスキップ中のため未検証になる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面」で、環境「ローカル」と「dev環境」を持ち、2 つ目のステップの Then:ローカル「配送料は 500 円になる」を持つ 2 ステップのスキップしたケースがあり、機能の一覧が区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの 2 つ目のステップの環境「ローカル」の Then は「配送料は 500 円になる（スキップ中のため未検証）」になる",
+                ),
+            ],
+        )
+        entry = write_python_skipped_result(
+            tmp_path,
+            [(SKIPPED_PURCHASE_CLASS_NAME, SKIPPED_PURCHASE_PROPERTIES)],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_SCENARIO)
+        page = generate_catalog_page(tmp_path, config)
+        assert dict(page.catalog["cases"][0]["steps"][1]["E"])["ローカル"] == (
+            "配送料は 500 円になる（スキップ中のため未検証）"
+        )
+
+    def test_設定ファイルの言語Pythonのテスト結果に_クラス名teststest_purchaseTestシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面で_環境ローカルとdev環境を持ち_2_つ目のステップの_Thendev環境配送料は配送業者の見積もり金額になるを持つ_2_ステップのスキップしたケースがあり_機能の一覧が区分シナリオに大機能商品を購入すると中機能通常の動線を持つとき_設定ファイルを渡して生成コマンドを実行すると_カタログに載るそのケースの_2_つ目のステップの環境dev環境の_Then_は配送料は配送業者の見積もり金額になるスキップ中のため未検証になる(
+        self, record_case, tmp_path
+    ):
+        record_case(
+            kind="部品間結合テスト",
+            normal_or_abnormal="正常系",
+            items=[
+                (
+                    "Given",
+                    "設定ファイルの言語「Python」のテスト結果に、クラス名「tests.test_purchase.Testシナリオ__商品を購入する__通常の動線__カート画面から注文完了画面」で、環境「ローカル」と「dev環境」を持ち、2 つ目のステップの Then:dev環境「配送料は配送業者の見積もり金額になる」を持つ 2 ステップのスキップしたケースがあり、機能の一覧が区分「シナリオ」に大機能「商品を購入する」と中機能「通常の動線」を持つとき",
+                ),
+                ("When", "設定ファイルを渡して生成コマンドを実行する"),
+                (
+                    "Then",
+                    "カタログに載るそのケースの 2 つ目のステップの環境「dev環境」の Then は「配送料は配送業者の見積もり金額になる（スキップ中のため未検証）」になる",
+                ),
+            ],
+        )
+        entry = write_python_skipped_result(
+            tmp_path,
+            [(SKIPPED_PURCHASE_CLASS_NAME, SKIPPED_PURCHASE_PROPERTIES)],
+        )
+        config = build_config(tmp_path, [entry], FEATURES_SCENARIO)
+        page = generate_catalog_page(tmp_path, config)
+        assert dict(page.catalog["cases"][0]["steps"][1]["E"])["dev環境"] == (
+            "配送料は配送業者の見積もり金額になる（スキップ中のため未検証）"
         )

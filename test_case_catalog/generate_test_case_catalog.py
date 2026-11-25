@@ -50,6 +50,9 @@ KEY_GIVEN = "Given"
 KEY_WHEN = "When"
 KEY_THEN = "Then"
 THEN_ENVIRONMENT_PREFIX = "Then:"
+SKIPPED_THEN_NOTE = "（スキップ中のため未検証）"
+JUNIT_SKIPPED_TAG = "skipped"
+GO_SKIP_ACTION = "skip"
 
 FEATURE_NAME_PATTERN = re.compile(r"\[([^:\]]+):([^:\]]+)(?::([^\]]+))?\](.+)")
 FEATURE_NAME_FORM = "[区分:大機能(:中機能)]小機能"
@@ -97,11 +100,13 @@ class RawTest:
         where: エラーに添える、テストの所在。
         source: 言語ごとに機能名が載っている場所の値。
         properties: 結果に載った順の (キー, 値)。
+        is_skipped: スキップしたと記録されたテストか。
     """
 
     where: str
     source: str
     properties: list[tuple[str, str]]
+    is_skipped: bool
 
 
 @dataclass(frozen=True)
@@ -429,6 +434,11 @@ def read_junit_properties(testcase: ET.Element, path: Path) -> list[tuple[str, s
     ]
 
 
+def is_junit_skipped(testcase: ET.Element) -> bool:
+    """testcase が skipped 要素を持つかを返す。"""
+    return testcase.find(JUNIT_SKIPPED_TAG) is not None
+
+
 def read_typescript_feature_name(test_name: str) -> str:
     """TypeScript の testcase 名から、先頭の describe 名 (機能名) を取り出す。"""
     return TYPESCRIPT_SEPARATOR_PATTERN.split(test_name, maxsplit=1)[0]
@@ -448,7 +458,14 @@ def list_typescript_tests(path: Path) -> list[RawTest]:
         name = read_attribute(testcase, "name", path)
         where = f"{path}: テスト「{name}」"
         with add_location_to_errors(where):
-            tests.append(RawTest(where, name, read_junit_properties(testcase, path)))
+            tests.append(
+                RawTest(
+                    where,
+                    name,
+                    read_junit_properties(testcase, path),
+                    is_junit_skipped(testcase),
+                )
+            )
     return tests
 
 
@@ -498,7 +515,12 @@ def list_python_tests(path: Path) -> list[RawTest]:
         where = f"{path}: クラス名「{class_name}」"
         with add_location_to_errors(where):
             tests.append(
-                RawTest(where, class_name, read_junit_properties(testcase, path))
+                RawTest(
+                    where,
+                    class_name,
+                    read_junit_properties(testcase, path),
+                    is_junit_skipped(testcase),
+                )
             )
     return tests
 
@@ -552,7 +574,12 @@ def list_csharp_tests(path: Path) -> list[RawTest]:
                 item for item in properties if item[0] != CSHARP_FEATURE_NAME_TRAIT
             ]
             tests.append(
-                RawTest(where, feature_name, normalize_csharp_properties(others))
+                RawTest(
+                    where,
+                    feature_name,
+                    normalize_csharp_properties(others),
+                    is_junit_skipped(testcase),
+                )
             )
     return tests
 
@@ -573,7 +600,12 @@ def list_kotlin_tests(path: Path) -> list[RawTest]:
         where = f"{path}: テストクラスの表示名「{suite_name}」"
         with add_location_to_errors(where):
             tests.append(
-                RawTest(where, suite_name, read_junit_properties(testcase, path))
+                RawTest(
+                    where,
+                    suite_name,
+                    read_junit_properties(testcase, path),
+                    is_junit_skipped(testcase),
+                )
             )
     return tests
 
@@ -614,6 +646,7 @@ def list_go_tests(path: Path) -> list[RawTest]:
     """`go test -json` の出力から、最も下の階層のテストごとの RawTest を取り出す。"""
     names: list[tuple[str, str]] = []
     properties_by_test: dict[tuple[str, str], list[tuple[str, str]]] = {}
+    skipped_tests: set[tuple[str, str]] = set()
     for event in read_json_lines(path):
         if "Test" not in event:
             continue
@@ -625,6 +658,8 @@ def list_go_tests(path: Path) -> list[RawTest]:
             properties_by_test.setdefault(test, []).append(
                 (event["Key"], event["Value"])
             )
+        elif event.get("Action") == GO_SKIP_ACTION:
+            skipped_tests.add(test)
     parents = {
         (package, GO_NAME_SEPARATOR.join(parts[:depth]))
         for package, name in names
@@ -632,7 +667,12 @@ def list_go_tests(path: Path) -> list[RawTest]:
         for depth in range(1, len(parts))
     }
     return [
-        RawTest(f"{path}: テスト「{name}」", name, properties_by_test[(package, name)])
+        RawTest(
+            f"{path}: テスト「{name}」",
+            name,
+            properties_by_test[(package, name)],
+            (package, name) in skipped_tests,
+        )
         for package, name in names
         if (package, name) not in parents
     ]
@@ -663,6 +703,11 @@ def list_dart_tests(path: Path) -> list[RawTest]:
         for event in events
         if event.get("type") == "testDone" and event.get("hidden")
     }
+    skipped_ids = {
+        event["testID"]
+        for event in events
+        if event.get("type") == "testDone" and event.get("skipped")
+    }
     printed: dict[int, list[str]] = {}
     for event in events:
         if event.get("type") == "print":
@@ -684,7 +729,9 @@ def list_dart_tests(path: Path) -> list[RawTest]:
                 if message.startswith(DART_SPEC_PREFIX)
             ]
             properties = [parse_dart_spec(message) for message in messages]
-            tests.append(RawTest(where, feature_name, properties))
+            tests.append(
+                RawTest(where, feature_name, properties, test["id"] in skipped_ids)
+            )
     return tests
 
 
@@ -758,6 +805,24 @@ def load_config(path: Path) -> CatalogConfig:
     )
 
 
+def mark_step_skipped(step: dict) -> dict:
+    """ステップの Then (環境ごとの Then はそれぞれ) の直後に、スキップ中の表示を続けたステップを返す。"""
+    then = step["then"]
+    return {
+        **step,
+        "then": None if then is None else then + SKIPPED_THEN_NOTE,
+        "environment_thens": [
+            (environment, text + SKIPPED_THEN_NOTE)
+            for environment, text in step["environment_thens"]
+        ],
+    }
+
+
+def mark_case_skipped(case: dict) -> dict:
+    """すべてのステップをスキップ中の表示付きにしたケースを返す。"""
+    return {**case, "steps": [mark_step_skipped(step) for step in case["steps"]]}
+
+
 def read_cases(config: CatalogConfig) -> list[dict]:
     """設定ファイルの results に書かれたテスト結果から、ケースを読む。"""
     cases = []
@@ -765,9 +830,8 @@ def read_cases(config: CatalogConfig) -> list[dict]:
         reader = LANGUAGE_READERS[result.language]
         for test in reader.list_tests(result.path):
             with add_location_to_errors(test.where):
-                cases.append(
-                    reader.read_case(test.source, test.properties, config.features)
-                )
+                case = reader.read_case(test.source, test.properties, config.features)
+                cases.append(mark_case_skipped(case) if test.is_skipped else case)
     return cases
 
 
