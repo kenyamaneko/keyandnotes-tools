@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ChangeDetectionResult:
-    """変更判定の結果。
-    """
+    """変更判定の結果。"""
 
     has_code_change: bool
     scopes: Mapping[str, bool]
+    is_base_resolved: bool

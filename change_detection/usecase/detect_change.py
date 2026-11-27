@@ -26,7 +26,9 @@ def detect_change(
     base = pull_request_base or pushed_before
     # 比較元のコミットがないと差分を取れないため、すべてをコードの変更とする。
     if not base or not repository.has_commit(base):
-        return ChangeDetectionResult(has_code_change=True, scopes={name: True for name in scopes})
+        return ChangeDetectionResult(
+            has_code_change=True, scopes={name: True for name in scopes}, is_base_resolved=False
+        )
 
     changed_paths = [
         path
@@ -40,4 +42,5 @@ def detect_change(
             name: any(is_in_scope(path, pattern) for path in changed_paths)
             for name, pattern in scopes.items()
         },
+        is_base_resolved=True,
     )

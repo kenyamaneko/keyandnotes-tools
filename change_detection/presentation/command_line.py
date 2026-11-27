@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -6,6 +7,7 @@ from pathlib import Path
 from change_detection.domain.change_detection_result import ChangeDetectionResult
 
 SCOPE_SEPARATOR = "="
+NEW_BRANCH_PUSHED_BEFORE = "0" * 40
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_FAILURE = 1
 
@@ -28,6 +30,17 @@ def _parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _log_unresolved_base(pull_request_base: str | None, pushed_before: str | None) -> None:
+    is_new_branch_push = not pull_request_base and pushed_before == NEW_BRANCH_PUSHED_BEFORE
+    record = {
+        "level": "Info" if is_new_branch_push else "Warn",
+        "message": "比較元のコミットを解決できないため、すべてをコードの変更とします。",
+        "pull_request_base": pull_request_base,
+        "pushed_before": pushed_before,
+    }
+    print(json.dumps(record, ensure_ascii=False), file=sys.stderr)
+
+
 def run_change_detection(
     argv: Sequence[str],
     detect_change: Callable[..., ChangeDetectionResult],
@@ -45,5 +58,7 @@ def run_change_detection(
         added_excluded_paths=arguments.excluded_path,
         scopes=dict(arguments.scope),
     )
+    if not result.is_base_resolved:
+        _log_unresolved_base(arguments.pull_request_base, arguments.pushed_before)
     write_output_file(Path(arguments.output_file), result)
     return EXIT_CODE_SUCCESS
