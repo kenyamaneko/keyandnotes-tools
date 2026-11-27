@@ -3,8 +3,10 @@ import io
 import re
 import tokenize
 from collections.abc import Callable, Sequence
-from functools import cache
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import PurePosixPath
+from typing import Protocol
 
 import tree_sitter
 import tree_sitter_c_sharp
@@ -23,91 +25,50 @@ _NEWLINE = b"\n"
 _COMMENT_MARKERS = re.compile(r"^(?:/\*+|//+|#+|\*+/?)?\s*")
 _DOCTEST_PROMPT = ">>>"
 
-_DIRECTIVE_COMMENT_PATTERNS = {
-    "typescript": (
-        r"@ts-[a-z-]+",
-        r"eslint-(?:disable|enable)",
-        r"prettier-ignore",
-        r"(?:istanbul|c8|v8) ignore",
-        r"<reference ",
-    ),
-    "go": (r"go:", r"\+build ", r"nolint"),
-    "dart": (r"ignore:", r"ignore_for_file:"),
-    "csharp": (r"ReSharper (?:disable|restore)",),
-    "kotlin": (r"noinspection", r"ktlint-(?:disable|enable)"),
-    "hcl": (r"tflint-ignore", r"checkov:"),
-    "python": (
-        r"type:",
-        r"noqa",
-        r"pragma:",
-        r"-\*- coding",
-    ),
-}
-_DIRECTIVE_COMMENT_PATTERNS["javascript"] = _DIRECTIVE_COMMENT_PATTERNS["typescript"]
-_DIRECTIVE_COMMENT_PATTERNS["tsx"] = _DIRECTIVE_COMMENT_PATTERNS["typescript"]
-
-_LANGUAGE_BY_SUFFIX = {
-    ".ts": "typescript",
-    ".mts": "typescript",
-    ".cts": "typescript",
-    ".tsx": "tsx",
-    ".js": "javascript",
-    ".jsx": "javascript",
-    ".mjs": "javascript",
-    ".cjs": "javascript",
-    ".go": "go",
-    ".dart": "dart",
-    ".cs": "csharp",
-    ".kt": "kotlin",
-    ".kts": "kotlin",
-    ".tf": "hcl",
-    ".tfvars": "hcl",
-    ".py": "python",
-}
-
-_GRAMMAR_LANGUAGES: dict[str, Callable[[], object]] = {
-    "typescript": tree_sitter_typescript.language_typescript,
-    "tsx": tree_sitter_typescript.language_tsx,
-    "javascript": tree_sitter_javascript.language,
-    "go": tree_sitter_go.language,
-    "dart": tree_sitter_dart.language,
-    "csharp": tree_sitter_c_sharp.language,
-    "kotlin": tree_sitter_kotlin.language,
-    "hcl": tree_sitter_hcl.language,
-}
-
 
 class _UnparsableSourceError(Exception):
     pass
 
 
-@cache
-def _build_parser(language: str) -> tree_sitter.Parser:
-    return tree_sitter.Parser(tree_sitter.Language(_GRAMMAR_LANGUAGES[language]()))
+class _TargetLanguage(Protocol):
+    def find_comment_spans(self, text: str) -> list[Span]:
+        """指示コメントを除くコメントの、バイト位置の範囲を昇順で返す。"""
+        ...
 
 
-def _is_directive_comment(language: str, comment: str) -> bool:
+def _has_directive_comment_pattern(patterns: Sequence[str], comment: str) -> bool:
     body = _COMMENT_MARKERS.sub("", comment, count=1)
-    if language == "python" and comment.startswith("#!"):
-        return True
-    return any(re.match(pattern, body) for pattern in _DIRECTIVE_COMMENT_PATTERNS[language])
+    return any(re.match(pattern, body) for pattern in patterns)
 
 
-def _find_tree_sitter_comment_spans(language: str, source: bytes) -> list[Span]:
-    tree = _build_parser(language).parse(source)
-    if tree.root_node.has_error:
-        raise _UnparsableSourceError
-    spans = []
-    pending = [tree.root_node]
-    while pending:
-        node = pending.pop()
-        if "comment" in node.type:
-            text = source[node.start_byte : node.end_byte].decode(errors="replace")
-            if not _is_directive_comment(language, text):
-                spans.append((node.start_byte, node.end_byte))
-            continue
-        pending.extend(node.children)
-    return sorted(spans)
+@dataclass(frozen=True)
+class _TreeSitterTargetLanguage:
+    load_grammar: Callable[[], object]
+    directive_comment_patterns: tuple[str, ...]
+
+    @cached_property
+    def parser(self) -> tree_sitter.Parser:
+        return tree_sitter.Parser(tree_sitter.Language(self.load_grammar()))
+
+    def _is_directive_comment(self, comment: str) -> bool:
+        return _has_directive_comment_pattern(self.directive_comment_patterns, comment)
+
+    def find_comment_spans(self, text: str) -> list[Span]:
+        source = text.encode(errors="surrogateescape")
+        tree = self.parser.parse(source)
+        if tree.root_node.has_error:
+            raise _UnparsableSourceError
+        spans = []
+        pending = [tree.root_node]
+        while pending:
+            node = pending.pop()
+            if "comment" in node.type:
+                comment = source[node.start_byte : node.end_byte].decode(errors="replace")
+                if not self._is_directive_comment(comment):
+                    spans.append((node.start_byte, node.end_byte))
+                continue
+            pending.extend(node.children)
+        return sorted(spans)
 
 
 def _list_line_start_offsets(source: bytes) -> list[int]:
@@ -117,53 +78,99 @@ def _list_line_start_offsets(source: bytes) -> list[int]:
     return offsets
 
 
-def _find_python_comment_spans(text: str) -> list[Span]:
-    source = text.encode(errors="surrogateescape")
-    line_starts = _list_line_start_offsets(source)
-    lines = text.split("\n")
+@dataclass(frozen=True)
+class _PythonTargetLanguage:
+    directive_comment_patterns: tuple[str, ...]
 
-    def calculate_byte_offset_from_character(row: int, column: int) -> int:
-        return line_starts[row - 1] + len(lines[row - 1][:column].encode(errors="surrogateescape"))
+    def _is_directive_comment(self, comment: str) -> bool:
+        return comment.startswith("#!") or _has_directive_comment_pattern(self.directive_comment_patterns, comment)
 
-    def calculate_byte_offset_from_byte(row: int, column: int) -> int:
-        return line_starts[row - 1] + column
+    def find_comment_spans(self, text: str) -> list[Span]:
+        source = text.encode(errors="surrogateescape")
+        line_starts = _list_line_start_offsets(source)
+        lines = text.split("\n")
 
-    spans = []
-    try:
-        for token in tokenize.generate_tokens(io.StringIO(text).readline):
-            if token.type == tokenize.COMMENT and not _is_directive_comment("python", token.string):
-                spans.append(
-                    (
-                        calculate_byte_offset_from_character(*token.start),
-                        calculate_byte_offset_from_character(*token.end),
+        def calculate_byte_offset_from_character(row: int, column: int) -> int:
+            return line_starts[row - 1] + len(lines[row - 1][:column].encode(errors="surrogateescape"))
+
+        def calculate_byte_offset_from_byte(row: int, column: int) -> int:
+            return line_starts[row - 1] + column
+
+        spans = []
+        try:
+            for token in tokenize.generate_tokens(io.StringIO(text).readline):
+                if token.type == tokenize.COMMENT and not self._is_directive_comment(token.string):
+                    spans.append(
+                        (
+                            calculate_byte_offset_from_character(*token.start),
+                            calculate_byte_offset_from_character(*token.end),
+                        )
                     )
+            tree = ast.parse(text)
+        except (tokenize.TokenError, SyntaxError, ValueError) as error:
+            raise _UnparsableSourceError from error
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Module | ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+                continue
+            first = node.body[0] if node.body else None
+            if not (
+                isinstance(first, ast.Expr)
+                and isinstance(first.value, ast.Constant)
+                and isinstance(first.value.value, str)
+            ):
+                continue
+            # 実行例を含む docstring は doctest がテストとして実行するため、取り除かずに比べる。
+            if _DOCTEST_PROMPT in first.value.value:
+                continue
+            spans.append(
+                (
+                    calculate_byte_offset_from_byte(first.lineno, first.col_offset),
+                    calculate_byte_offset_from_byte(first.end_lineno, first.end_col_offset),
                 )
-        tree = ast.parse(text)
-    except (tokenize.TokenError, SyntaxError, ValueError) as error:
-        raise _UnparsableSourceError from error
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Module | ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
-            continue
-        first = node.body[0] if node.body else None
-        if not (
-            isinstance(first, ast.Expr)
-            and isinstance(first.value, ast.Constant)
-            and isinstance(first.value.value, str)
-        ):
-            continue
-        # 実行例を含む docstring は doctest がテストとして実行するため、取り除かずに比べる。
-        if _DOCTEST_PROMPT in first.value.value:
-            continue
-        spans.append(
-            (
-                calculate_byte_offset_from_byte(first.lineno, first.col_offset),
-                calculate_byte_offset_from_byte(first.end_lineno, first.end_col_offset),
             )
-        )
-    return sorted(spans)
+        return sorted(spans)
 
 
-def _remove_span(source: bytes, start: int, end: int) -> tuple[int, int]:
+_TYPESCRIPT_DIRECTIVE_COMMENT_PATTERNS = (
+    r"@ts-[a-z-]+",
+    r"eslint-(?:disable|enable)",
+    r"prettier-ignore",
+    r"(?:istanbul|c8|v8) ignore",
+    r"<reference ",
+)
+_TYPESCRIPT = _TreeSitterTargetLanguage(
+    tree_sitter_typescript.language_typescript, _TYPESCRIPT_DIRECTIVE_COMMENT_PATTERNS
+)
+_TSX = _TreeSitterTargetLanguage(tree_sitter_typescript.language_tsx, _TYPESCRIPT_DIRECTIVE_COMMENT_PATTERNS)
+_JAVASCRIPT = _TreeSitterTargetLanguage(tree_sitter_javascript.language, _TYPESCRIPT_DIRECTIVE_COMMENT_PATTERNS)
+_GO = _TreeSitterTargetLanguage(tree_sitter_go.language, (r"go:", r"\+build ", r"nolint"))
+_DART = _TreeSitterTargetLanguage(tree_sitter_dart.language, (r"ignore:", r"ignore_for_file:"))
+_CSHARP = _TreeSitterTargetLanguage(tree_sitter_c_sharp.language, (r"ReSharper (?:disable|restore)",))
+_KOTLIN = _TreeSitterTargetLanguage(tree_sitter_kotlin.language, (r"noinspection", r"ktlint-(?:disable|enable)"))
+_TERRAFORM = _TreeSitterTargetLanguage(tree_sitter_hcl.language, (r"tflint-ignore", r"checkov:"))
+_PYTHON = _PythonTargetLanguage((r"type:", r"noqa", r"pragma:", r"-\*- coding"))
+
+_TARGET_LANGUAGE_BY_SUFFIX: dict[str, _TargetLanguage] = {
+    ".ts": _TYPESCRIPT,
+    ".mts": _TYPESCRIPT,
+    ".cts": _TYPESCRIPT,
+    ".tsx": _TSX,
+    ".js": _JAVASCRIPT,
+    ".jsx": _JAVASCRIPT,
+    ".mjs": _JAVASCRIPT,
+    ".cjs": _JAVASCRIPT,
+    ".go": _GO,
+    ".dart": _DART,
+    ".cs": _CSHARP,
+    ".kt": _KOTLIN,
+    ".kts": _KOTLIN,
+    ".tf": _TERRAFORM,
+    ".tfvars": _TERRAFORM,
+    ".py": _PYTHON,
+}
+
+
+def _calculate_removal_span(source: bytes, start: int, end: int) -> Span:
     line_start = source.rfind(_NEWLINE, 0, start) + 1
     line_end = source.find(_NEWLINE, end)
     if line_end == -1:
@@ -173,32 +180,28 @@ def _remove_span(source: bytes, start: int, end: int) -> tuple[int, int]:
     if not has_code_before and not has_code_after:
         return line_start, min(line_end + 1, len(source))
     if has_code_before:
-        while start > line_start and source[start - 1 : start] in (b" ", b"\t"):
+        while start > line_start and source[start - 1] in _HORIZONTAL_SPACES:
             start -= 1
         return start, end
-    while end < line_end and source[end : end + 1] in (b" ", b"\t"):
+    while end < line_end and source[end] in _HORIZONTAL_SPACES:
         end += 1
     return start, end
 
 
-def _remove_comments(source: bytes, spans: Sequence[Span]) -> bytes:
+def _remove_comment_spans(source: bytes, spans: Sequence[Span]) -> bytes:
     result = bytearray()
     position = 0
     for start, end in spans:
-        remove_start, remove_end = _remove_span(source, start, end)
-        result += source[position : max(position, remove_start)]
-        position = max(position, remove_end)
+        removal_start, removal_end = _calculate_removal_span(source, start, end)
+        result += source[position : max(position, removal_start)]
+        position = max(position, removal_end)
     result += source[position:]
     return bytes(result)
 
 
-def _strip_comments(language: str, text: str) -> bytes:
+def _remove_comments_from_text(target_language: _TargetLanguage, text: str) -> bytes:
     source = text.encode(errors="surrogateescape")
-    if language == "python":
-        spans = _find_python_comment_spans(text)
-    else:
-        spans = _find_tree_sitter_comment_spans(language, source)
-    return _remove_comments(source, spans)
+    return _remove_comment_spans(source, target_language.find_comment_spans(text))
 
 
 def is_code_change(path: str, before: str | None, after: str | None) -> bool:
@@ -211,10 +214,12 @@ def is_code_change(path: str, before: str | None, after: str | None) -> bool:
     """
     if before is None or after is None:
         return True
-    target_language = _LANGUAGE_BY_SUFFIX.get(PurePosixPath(path).suffix)
+    target_language = _TARGET_LANGUAGE_BY_SUFFIX.get(PurePosixPath(path).suffix)
     if target_language is None:
         return before != after
     try:
-        return _strip_comments(target_language, before) != _strip_comments(target_language, after)
+        return _remove_comments_from_text(target_language, before) != _remove_comments_from_text(
+            target_language, after
+        )
     except _UnparsableSourceError:
         return before != after

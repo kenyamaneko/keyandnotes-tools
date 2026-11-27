@@ -10,6 +10,8 @@ from change_detection.domain.change_detection_result import ChangeDetectionResul
 SCOPE_SEPARATOR = "="
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_FAILURE = 1
+# GitHub Actions は、新しいブランチのプッシュでは、プッシュ前のコミットに 40 桁の 0 を渡すため、この値で見分ける。
+NEW_BRANCH_PUSHED_BEFORE = "0" * 40
 
 
 def _parse_scope(argument: str) -> tuple[str, str]:
@@ -52,9 +54,11 @@ def run_change_detection(
     if not arguments.output_file:
         print("出力ファイルが指定されていません。--output-file に出力先を指定してください。", file=sys.stderr)
         return EXIT_CODE_FAILURE
+    is_new_branch_push = arguments.pushed_before == NEW_BRANCH_PUSHED_BEFORE
     result = detect_change(
-        pull_request_base=arguments.pull_request_base,
-        pushed_before=arguments.pushed_before,
+        pull_request_base=arguments.pull_request_base or None,
+        pushed_before=None if is_new_branch_push else arguments.pushed_before or None,
+        is_new_branch_push=is_new_branch_push,
         head=arguments.head,
         added_excluded_paths=arguments.excluded_path,
         scopes=dict(arguments.scope),

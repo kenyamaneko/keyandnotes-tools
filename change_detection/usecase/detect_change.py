@@ -15,6 +15,7 @@ def detect_change(
     *,
     pull_request_base: str | None,
     pushed_before: str | None,
+    is_new_branch_push: bool,
     head: str,
     added_excluded_paths: Sequence[str],
     scopes: Mapping[str, str],
@@ -22,18 +23,18 @@ def detect_change(
     """変更後のコミットに、コードの変更があるかを範囲ごとに判定する。
 
     Args:
-        pull_request_base: 取り込み先のコミット。None と空文字は、指定がないことを表す。
-        pushed_before: プッシュ前のコミット。None と空文字は、指定がないことを表す。取り込み先のコミットの指定があるときは使わない。
+        pull_request_base: 取り込み先のコミット。指定がないときは None。
+        pushed_before: プッシュ前のコミット。指定がないときと、新しいブランチのプッシュのときは None。取り込み先のコミットの指定があるときは使わない。
         added_excluded_paths: 標準の除外パスに足す、パスのパターン。
         scopes: 範囲の名前から、範囲に属するパスのパターンへの対応。
     """
     base = pull_request_base or pushed_before
     # 比較元のコミットがないと差分を取れないため、すべてをコードの変更とする。
-    if not base or not repository.has_commit(base):
+    if base is None or not repository.has_commit(base):
         return ChangeDetectionResult(
             has_code_change=True,
             scopes={name: True for name in scopes},
-            base_resolution=classify_unresolved_base(pull_request_base, pushed_before),
+            base_resolution=classify_unresolved_base(base, is_new_branch_push=is_new_branch_push),
         )
 
     changed_paths = [

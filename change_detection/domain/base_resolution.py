@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-_NEW_BRANCH_PUSHED_BEFORE = "0" * 40
-
 
 class BaseResolution(Enum):
     """比較元のコミットを解決できたかと、解決できない理由。"""
@@ -11,13 +9,12 @@ class BaseResolution(Enum):
     MISSING = auto()
 
 
-def classify_unresolved_base(pull_request_base: str | None, pushed_before: str | None) -> BaseResolution:
+def classify_unresolved_base(base: str | None, *, is_new_branch_push: bool) -> BaseResolution:
     """解決できない比較元を、解決できない理由に分ける。
 
     Args:
-        pull_request_base: 取り込み先のコミット。None と空文字は、指定がないことを表す。
-        pushed_before: プッシュ前のコミット。None と空文字は、指定がないことを表す。
+        base: 解決できない比較元のコミット。指定がないときは None。
     """
-    if not pull_request_base and pushed_before == _NEW_BRANCH_PUSHED_BEFORE:
+    if base is None and is_new_branch_push:
         return BaseResolution.NEW_BRANCH_PUSH
     return BaseResolution.MISSING
