@@ -1,5 +1,7 @@
 from typing import Protocol
 
+from change_detection.domain.committed_file import CommittedFile
+
 
 class GitRepository(Protocol):
     """変更判定が使う、Git のリポジトリの読み取り。"""
@@ -12,6 +14,6 @@ class GitRepository(Protocol):
         """2 つのコミットの間で変更されたファイルのパスを返す。名前の変更は、元のパスの削除と新しいパスの追加として返す。"""
         ...
 
-    def read_file(self, commit: str, path: str) -> str | None:
-        """コミット時点のファイルの内容を返す。ファイルがないときは None を返す。"""
+    def find_file(self, commit: str, path: str) -> CommittedFile | None:
+        """コミット時点のファイルを返す。パスにファイルがないとき (サブモジュールやディレクトリのときを含む) は None を返す。"""
         ...

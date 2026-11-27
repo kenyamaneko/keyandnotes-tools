@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+from change_detection.domain.committed_file import CommittedFile
+
 
 class GitCommandRepository:
     """git コマンドで読む、ローカルの Git のリポジトリ。"""
@@ -17,11 +19,18 @@ class GitCommandRepository:
         output = self._run_git_command(["diff", "--name-only", "--no-renames", "-z", base, head]).stdout
         return [path.decode(errors="surrogateescape") for path in output.split(b"\0") if path]
 
-    def read_file(self, commit: str, path: str) -> str | None:
-        """コミット時点のファイルの内容を返す。ファイルがないときは None を返す。"""
-        if self._run_git_command(["cat-file", "-e", f"{commit}:{path}"], check=False).returncode != 0:
+    def find_file(self, commit: str, path: str) -> CommittedFile | None:
+        """コミット時点のファイルを返す。パスにファイルがないとき (サブモジュールやディレクトリのときを含む) は None を返す。"""
+        entry = self._run_git_command(
+            ["--literal-pathspecs", "ls-tree", "-z", "--full-tree", commit, "--", path]
+        ).stdout
+        if not entry:
             return None
-        return self._run_git_command(["show", f"{commit}:{path}"]).stdout.decode(errors="surrogateescape")
+        file_mode, object_type, object_id = entry.split(b"\t", 1)[0].decode().split()
+        if object_type != "blob":
+            return None
+        content = self._run_git_command(["cat-file", "blob", object_id]).stdout
+        return CommittedFile(file_mode=file_mode, content=content.decode(errors="surrogateescape"))
 
     def _run_git_command(self, arguments: list[str], *, check: bool = True) -> subprocess.CompletedProcess[bytes]:
         return subprocess.run(

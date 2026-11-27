@@ -17,6 +17,9 @@ import tree_sitter_javascript
 import tree_sitter_kotlin
 import tree_sitter_typescript
 
+from change_detection.domain.committed_file import CommittedFile
+from change_detection.domain.errors import UnparsableSourceError
+
 Span = tuple[int, int]
 
 _HORIZONTAL_SPACES = b" \t"
@@ -24,10 +27,6 @@ _LINE_END_SPACES = b" \t\r"
 _NEWLINE = b"\n"
 _COMMENT_MARKERS = re.compile(r"^(?:/\*+|//+|#+|\*+/?)?\s*")
 _DOCTEST_PROMPT = ">>>"
-
-
-class _UnparsableSourceError(Exception):
-    pass
 
 
 class _TargetLanguage(Protocol):
@@ -57,7 +56,7 @@ class _TreeSitterTargetLanguage:
         source = text.encode(errors="surrogateescape")
         tree = self.parser.parse(source)
         if tree.root_node.has_error:
-            raise _UnparsableSourceError
+            raise UnparsableSourceError
         spans = []
         pending = [tree.root_node]
         while pending:
@@ -108,7 +107,7 @@ class _PythonTargetLanguage:
                     )
             tree = ast.parse(text)
         except (tokenize.TokenError, SyntaxError, ValueError) as error:
-            raise _UnparsableSourceError from error
+            raise UnparsableSourceError from error
         for node in ast.walk(tree):
             if not isinstance(node, ast.Module | ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
                 continue
@@ -204,22 +203,22 @@ def _remove_comments_from_text(target_language: _TargetLanguage, text: str) -> b
     return _remove_comment_spans(source, target_language.find_comment_spans(text))
 
 
-def is_code_change(path: str, before: str | None, after: str | None) -> bool:
-    """ファイルの変更前後の内容から、コードの変更に数えるかを返す。
+def is_code_change(path: str, before: CommittedFile | None, after: CommittedFile | None) -> bool:
+    """ファイルの変更前後から、コードの変更に数えるかを返す。
 
     Args:
         path: ファイルのパス。拡張子で対象言語を決める。
-        before: 変更前の内容。ファイルが無い (追加された) ときは None。空のファイルは空文字。
-        after: 変更後の内容。ファイルが無い (削除された) ときは None。空のファイルは空文字。
+        before: 変更前のファイル。ファイルが無い (追加された) ときは None。
+        after: 変更後のファイル。ファイルが無い (削除された) ときは None。
+
+    Raises:
+        UnparsableSourceError: 内容の比較に必要な、対象言語のソースを解析できない。
     """
-    if before is None or after is None:
+    if before is None or after is None or before.file_mode != after.file_mode:
         return True
     target_language = _TARGET_LANGUAGE_BY_SUFFIX.get(PurePosixPath(path).suffix)
     if target_language is None:
-        return before != after
-    try:
-        return _remove_comments_from_text(target_language, before) != _remove_comments_from_text(
-            target_language, after
-        )
-    except _UnparsableSourceError:
-        return before != after
+        return before.content != after.content
+    return _remove_comments_from_text(target_language, before.content) != _remove_comments_from_text(
+        target_language, after.content
+    )

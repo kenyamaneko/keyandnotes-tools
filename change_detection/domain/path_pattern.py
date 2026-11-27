@@ -22,11 +22,11 @@ def is_excluded_path(path: str, added_excluded_paths: Sequence[str] = ()) -> boo
     return any(fnmatchcase(path, pattern) for pattern in (*_STANDARD_EXCLUDED_PATHS, *added_excluded_paths))
 
 
-def is_in_scope(path: str, scope_pattern: str) -> bool:
+def is_in_scope(path: str, scope_patterns: Sequence[str]) -> bool:
     """パスが範囲に属するかを返す。
 
     Args:
         path: リポジトリのルートからのパス。
-        scope_pattern: 範囲に属する、パスのパターン。`*` は `/` を含む任意の文字列に一致する。
+        scope_patterns: 範囲に属する、パスのパターン。どれか 1 つに当てはまれば範囲に属する。`*` は `/` を含む任意の文字列に一致する。
     """
-    return fnmatchcase(path, scope_pattern)
+    return any(fnmatchcase(path, pattern) for pattern in scope_patterns)
