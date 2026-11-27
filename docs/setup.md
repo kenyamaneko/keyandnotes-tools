@@ -42,6 +42,17 @@ jq --arg commit "$GITHUB_SHA" --arg css "tools/test_case_catalog/test_case_catal
 
 CI で、コードの変更があるときだけテスト・ビルドのジョブを動かすために使う。コメントだけが変わった差分と、除外パスの変更は、コードの変更に数えない。
 
+コメントだけが変わった差分を判定する対象言語は次のとおり。これ以外の言語のファイルの変更は、コードの変更に数える。
+
+- TypeScript (TSX を含む)
+- JavaScript
+- Go
+- Python
+- Dart
+- C#
+- Kotlin
+- Terraform
+
 1. 本リポジトリをタグを指定してチェックアウトし、`pip install -r <チェックアウト先>/requirements.txt` を実行する
 2. 各リポジトリの `git fetch` で、比較元のコミットを取得できるようにする (`actions/checkout` の `fetch-depth: 0`)
 3. 各リポジトリのルートで、チェックアウト先を `PYTHONPATH` に通して `python -m change_detection` を実行する
