@@ -1,5 +1,9 @@
 from collections.abc import Mapping, Sequence
 
+from change_detection.domain.base_resolution import (
+    BaseResolution,
+    classify_unresolved_base,
+)
 from change_detection.domain.change_detection_result import ChangeDetectionResult
 from change_detection.domain.comment_only_diff import is_code_change
 from change_detection.domain.path_pattern import is_excluded_path, is_in_scope
@@ -27,7 +31,9 @@ def detect_change(
     # 比較元のコミットがないと差分を取れないため、すべてをコードの変更とする。
     if not base or not repository.has_commit(base):
         return ChangeDetectionResult(
-            has_code_change=True, scopes={name: True for name in scopes}, is_base_resolved=False
+            has_code_change=True,
+            scopes={name: True for name in scopes},
+            base_resolution=classify_unresolved_base(pull_request_base, pushed_before),
         )
 
     changed_paths = [
@@ -42,5 +48,5 @@ def detect_change(
             name: any(is_in_scope(path, pattern) for path in changed_paths)
             for name, pattern in scopes.items()
         },
-        is_base_resolved=True,
+        base_resolution=BaseResolution.RESOLVED,
     )

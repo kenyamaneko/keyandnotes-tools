@@ -1,6 +1,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from change_detection.domain.base_resolution import BaseResolution
+
 
 @dataclass(frozen=True)
 class ChangeDetectionResult:
@@ -8,4 +10,4 @@ class ChangeDetectionResult:
 
     has_code_change: bool
     scopes: Mapping[str, bool]
-    is_base_resolved: bool
+    base_resolution: BaseResolution
