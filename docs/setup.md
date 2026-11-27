@@ -72,3 +72,73 @@ jobs:
 | 呼び出し元が与える権限 | `contents: write` |
 
 リモートにバージョンタグ (`vX.Y.Z`) が 1 つも無いリポジトリでは、失敗する。最初のバージョンタグは手で打つ。
+
+## 変更判定
+
+CI で、コードの変更があるときだけテスト・ビルドのジョブを動かすために使う。コメントだけが変わった差分と、除外パスの変更は、コードの変更に数えない。除外パスでないファイルの権限の変更は、コードの変更に数える。
+
+コメントだけが変わった差分を判定する対象言語は次のとおり。これ以外の言語のファイルの変更は、コードの変更に数える。対象言語のファイルを解析できないときは、コードの変更に数え、標準エラー出力に警告ログを出す。
+
+- TypeScript (TSX を含む)
+- JavaScript
+- Go
+- Python
+- Dart
+- C#
+- Kotlin
+- Terraform
+
+1. 本リポジトリをタグを指定してチェックアウトし、`pip install -r <チェックアウト先>/requirements.txt` を実行する
+2. 各リポジトリの `git fetch` で、比較元のコミットを取得できるようにする (`actions/checkout` の `fetch-depth: 0`)
+3. 各リポジトリのルートで、チェックアウト先を `PYTHONPATH` に通して `python -m change_detection` を実行する
+4. 結果は出力ファイルに、`changed=true|false` と `<範囲名>=true|false` の行で追記される。GitHub Actions では、出力ファイルに `$GITHUB_OUTPUT` を指定する
+
+| オプション | 内容 |
+|---|---|
+| `--pull-request-base` | 取り込み先のコミット。指定があるときは、比較元に使う。空文字は指定なしとして扱う |
+| `--pushed-before` | プッシュ前のコミット。取り込み先のコミットの指定がないときに、比較元に使う。空文字は指定なしとして扱う |
+| `--head` | 変更後のコミット (必須)。リポジトリにないときは、エラーで終了する |
+| `--output-file` | 結果を書くファイル (必須) |
+| `--excluded-path` | 標準の除外パスに足すパターン。繰り返せる |
+| `--scope` | `<範囲名>=<パスのパターン>`。繰り返せる。同じ範囲名を繰り返すと、その範囲にパターンが足される |
+
+取り込み先のコミットもプッシュ前のコミットも指定がないときと、比較元のコミットがリポジトリにないとき (例: 新しいブランチのプッシュ) は、リポジトリ全体とすべての範囲に、コードの変更があるとみなす。このときは、標準エラー出力にログを出す。ログのレベルは、新しいブランチのプッシュでは情報、それ以外では警告になる。
+
+パスのパターンの `*` は、`/` を含む任意の文字列に一致する。
+
+標準の除外パスは次のとおり。
+
+- `*.md`
+- `docs/**`
+- `rules/**`
+- `.claude/**`
+- `.vscode/**`
+- `.gitignore`
+- `LICENSE`
+
+GitHub Actions で、判定の結果を後続のジョブと呼び出し元のワークフローに渡す部分は、次のように書く。
+
+```yaml
+on:
+  workflow_call:
+    outputs:
+      code:
+        value: ${{ jobs.changes.outputs.code }}
+
+jobs:
+  changes:
+    outputs:
+      code: ${{ steps.detect.outputs.changed }}
+      backend: ${{ steps.detect.outputs.backend }}
+    steps:
+      - name: Detect code change
+        id: detect
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          PYTHONPATH=<チェックアウト先> python -m change_detection \
+            --pull-request-base "$PR_BASE_SHA" --pushed-before "$PUSH_BEFORE_SHA" \
+            --head HEAD --output-file "$GITHUB_OUTPUT" \
+            --scope 'backend=backend/*'
+```

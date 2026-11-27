@@ -33,7 +33,7 @@ def list_remote_tag_names(remote_git_repository):
 
 @pytest.fixture
 def remote_git_repository(tmp_path):
-    """タグが 1 つも無い、ローカルに作った実物の bare リポジトリのパスを返す。"""
+    """タグが 1 つも無い、ローカルに作った実物のベアリポジトリのパスを返す。"""
     path = tmp_path / "remote.git"
     run_git(tmp_path, "init", "--bare", "--initial-branch=main", str(path))
     return path

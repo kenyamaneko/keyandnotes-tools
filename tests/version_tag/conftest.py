@@ -2,7 +2,7 @@ import pytest
 
 
 class FakeRemoteTagRepository:
-    """リモートのタグ名の一覧を状態として持つ、リモートのタグの偽物。"""
+    """リモートのタグ名の一覧を状態として持つ、リモートのタグのフェイク。"""
 
     def __init__(self):
         self.tag_names = []
@@ -16,5 +16,5 @@ class FakeRemoteTagRepository:
 
 @pytest.fixture
 def remote_tag_repository():
-    """タグが 1 つも無い状態のリモートのタグの偽物を返す。"""
+    """タグが 1 つも無い状態のリモートのタグのフェイクを返す。"""
     return FakeRemoteTagRepository()
