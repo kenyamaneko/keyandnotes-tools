@@ -1,0 +1,29 @@
+name: Release
+
+# バージョンの桁は後方互換の判断であり変更内容から導けないため、人が選んで実行する。
+on:
+  workflow_dispatch:
+    inputs:
+      bump_kind:
+        description: バージョンアップの種類 (patch・minor・major)
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version_tag:
+    name: Tag Version
+    # 各リポジトリが取得するバージョンを main のコミットに限るため、main から実行したときだけ進める。
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/create-version-tag.yml
+    with:
+      bump_kind: ${{ inputs.bump_kind }}
