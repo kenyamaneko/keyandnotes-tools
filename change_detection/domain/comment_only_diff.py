@@ -21,6 +21,7 @@ _HORIZONTAL_SPACES = b" \t"
 _LINE_END_SPACES = b" \t\r"
 _NEWLINE = b"\n"
 _COMMENT_MARKERS = re.compile(r"^(?:/\*+|//+|#+|\*+/?)?\s*")
+_DOCTEST_PROMPT = ">>>"
 
 _DIRECTIVE_COMMENT_PATTERNS = {
     "typescript": (
@@ -144,13 +145,21 @@ def _find_python_comment_spans(text: str) -> list[Span]:
         if not isinstance(node, ast.Module | ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
             continue
         first = node.body[0] if node.body else None
-        if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
-            spans.append(
-                (
-                    calculate_byte_offset_from_byte(first.lineno, first.col_offset),
-                    calculate_byte_offset_from_byte(first.end_lineno, first.end_col_offset),
-                )
+        if not (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
+            continue
+        # 実行例を含む docstring は doctest がテストとして実行するため、取り除かずに比べる。
+        if _DOCTEST_PROMPT in first.value.value:
+            continue
+        spans.append(
+            (
+                calculate_byte_offset_from_byte(first.lineno, first.col_offset),
+                calculate_byte_offset_from_byte(first.end_lineno, first.end_col_offset),
             )
+        )
     return sorted(spans)
 
 

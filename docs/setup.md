@@ -49,12 +49,16 @@ CI で、コードの変更があるときだけテスト・ビルドのジョ�
 
 | オプション | 内容 |
 |---|---|
-| `--pull-request-base` | 取り込み先のコミット。プルリクエストのときだけ指定する (空文字を渡さない) |
-| `--pushed-before` | プッシュ前のコミット。プルリクエストでないとき指定する |
+| `--pull-request-base` | 取り込み先のコミット。指定があるときは、比較元に使う。空文字は指定なしとして扱う |
+| `--pushed-before` | プッシュ前のコミット。取り込み先のコミットの指定がないときに、比較元に使う。空文字は指定なしとして扱う |
 | `--head` | 変更後のコミット (必須) |
 | `--output-file` | 結果を書くファイル (必須) |
 | `--excluded-path` | 標準の除外パスに足すパターン。繰り返せる |
-| `--scope` | `<範囲名>=<パスのパターン>`。繰り返せる |
+| `--scope` | `<範囲名>=<パスのパターン>`。範囲名を変えて繰り返せる |
+
+取り込み先のコミットもプッシュ前のコミットも指定がないときと、比較元のコミットがリポジトリにないとき (例: 新しいブランチのプッシュ) は、リポジトリ全体とすべての範囲に、コードの変更があるとみなす。
+
+パスのパターンの `*` は、`/` を含む任意の文字列に一致する。
 
 標準の除外パスは次のとおり。
 
@@ -65,3 +69,30 @@ CI で、コードの変更があるときだけテスト・ビルドのジョ�
 - `.vscode/**`
 - `.gitignore`
 - `LICENSE`
+
+GitHub Actions で、判定の結果を後続のジョブと呼び出し元のワークフローに渡す部分は、次のように書く。
+
+```yaml
+on:
+  workflow_call:
+    outputs:
+      code:
+        value: ${{ jobs.changes.outputs.code }}
+
+jobs:
+  changes:
+    outputs:
+      code: ${{ steps.detect.outputs.changed }}
+      backend: ${{ steps.detect.outputs.backend }}
+    steps:
+      - name: Detect code change
+        id: detect
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          PYTHONPATH=<チェックアウト先> python -m change_detection \
+            --pull-request-base "$PR_BASE_SHA" --pushed-before "$PUSH_BEFORE_SHA" \
+            --head HEAD --output-file "$GITHUB_OUTPUT" \
+            --scope 'backend=backend/*'
+```
